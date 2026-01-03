@@ -1,0 +1,15 @@
+{
+  "model": "MTF Scalper (5M)",
+  "version": "v2",
+  "train_samples": 294172,
+  "val_samples": 63036,
+  "test_samples": 63038,
+  "features": 231,
+  "win_rate_train": 0.3025508885957875,
+  "win_rate_val": 0.31415381686655247,
+  "optimal_threshold": 0.20130409778382768,
+  "threshold_90_precision": 0.5714391536525177,
+  "val_roc_auc": 0.5752716176481147,
+  "confidence_mean": 0.3141547438653904,
+  "confidence_95th": 0.4381381316171563
+}

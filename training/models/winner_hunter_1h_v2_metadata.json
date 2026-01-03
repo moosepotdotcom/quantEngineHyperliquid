@@ -1,0 +1,15 @@
+{
+  "model": "Winner Hunter (1H)",
+  "version": "v2",
+  "train_samples": 51269,
+  "val_samples": 10986,
+  "test_samples": 10987,
+  "features": 77,
+  "win_rate_train": 0.30646199457762,
+  "win_rate_val": 0.295193883123976,
+  "optimal_threshold": 0.27518471074481204,
+  "threshold_90_precision": 0.3285799563908994,
+  "val_roc_auc": 0.5134899081656876,
+  "confidence_mean": 0.29527032921504565,
+  "confidence_95th": 0.31538285048171005
+}
