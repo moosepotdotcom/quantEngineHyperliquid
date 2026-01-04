@@ -35,8 +35,6 @@ ENV/
 # Data and Logs
 logs/
 *.jsonl
-*.csv
-data/historical/
 *.log
 
 # Models (keep versioned models, ignore temp)
