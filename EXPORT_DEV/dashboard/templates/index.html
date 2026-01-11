@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trading Command Center</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --neon-red: #ff004c;
+            --dark-bg: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid #30363d;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #58a6ff;
+        }
+
+        /* METRICS GRID */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-box {
+            background: #21262d;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .metric-val {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        /* CONFIDENCE GAUGE */
+        .gauge-container {
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CONTROLS */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-buy {
+            background-color: #0f3d0f;
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .btn-buy:hover {
+            background-color: var(--neon-green);
+            color: black;
+        }
+
+        .btn-sell {
+            background-color: #3d0f0f;
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .btn-sell:hover {
+            background-color: var(--neon-red);
+            color: white;
+        }
+
+        .btn-emergency {
+            width: 100%;
+            background-color: #8b0000;
+            color: white;
+            margin-top: 20px;
+            border: 2px solid red;
+        }
+
+        .btn-emergency:hover {
+            background-color: red;
+        }
+
+        /* LOGS */
+        #log-window {
+            height: 400px;
+            overflow-y: scroll;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            font-size: 0.9em;
+            border: 1px solid #30363d;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2px;
+        }
+
+        /* POSITIONS TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        th {
+            color: #8b949e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1>📡 AI Trading Command Center</h1>
+        <div>
+            <span id="connection-status" style="color:red">● Disconnected</span>
+            <a href="/logout" style="margin-left:20px; color:#58a6ff; text-decoration:none;">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- LEFT COLUMN: VISUALS -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- TOP METRICS -->
+            <div class="card">
+                <h2>System Status</h2>
+                <div class="metric-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">Daily PnL</div>
+                        <div class="metric-val" id="val-pnl">$0.00</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Balance <button onclick="fetchBalance()"
+                                style="padding:2px 6px; font-size:0.8em; margin-left:5px; background:#444;">↻</button>
+                        </div>
+                        <div class="metric-val" id="val-balance">$0.00</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Active Signal</div>
+                        <div class="metric-val" id="val-signal">WAIT</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Bitcoin Price</div>
+                        <div class="metric-val" id="val-price">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIDENCE METER -->
+            <div class="card">
+                <h2>AI Confidence Meter (Target: 45%)</h2>
+                <div class="gauge-container">
+                    <canvas id="confidenceChart"></canvas>
+                    <div id="confidence-text" style="position:absolute; font-size:2em; font-weight:bold;">0%</div>
+                </div>
+            </div>
+
+            <!-- LOGS -->
+            <div class="card">
+                <h2>Logic Stream</h2>
+                <div id="log-window"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: CONTROLS -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- ACTIVE POSITIONS -->
+            <div class="card" style="flex-grow:1;">
+                <h2>Active Positions</h2>
+                <table id="positions-table">
+                    <thead>
+                        <tr>
+                            <th>Coin</th>
+                            <th>Side</th>
+                            <th>Size</th>
+                            <th>PnL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MANUAL ACTIONS -->
+            <div class="card">
+                <h2>Manual Override</h2>
+                <p style="font-size:0.8em; color:#8b949e;">Force entry at current market price. AI will still manage
+                    exits.</p>
+
+                <div class="btn-group">
+                    <button class="btn-buy" onclick="executeTrade('buy')">Big Green Button (BUY)</button>
+                    <button class="btn-sell" onclick="executeTrade('sell')">Big Red Button (SELL)</button>
+                </div>
+
+                <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
+                    <h3>Configuration</h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span>Take Profit:</span>
+                        <span><input type="number" style="width:60px;" value="1.5">%</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Stop Loss:</span>
+                        <span><input type="number" style="width:60px;" value="0.8">%</span>
+                    </div>
+                    <button style="width:100%; margin-top:10px; background:#233;" disabled>Update Config
+                        (Simulated)</button>
+                </div>
+
+                <button class="btn-emergency" onclick="emergencyClose()">🚨 EMERGENCY STOP (CLOSE ALL) 🚨</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- CHART SETUP ---
+        const ctx = document.getElementById('confidenceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confidence', 'Gap'],
+                datasets: [{
+                    data: [0, 100],
+                    backgroundColor: ['#00ff41', '#21262d'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- POLLING LOGIC ---
+        function updateDashboard() {
+            fetch('/api/status')
+                .then(r => {
+                    if (r.status === 401) window.location.href = '/login';
+                    return r.json();
+                })
+                .then(resp => {
+                    // Update Status Indicator
+                    document.getElementById('connection-status').innerHTML = "● Connected";
+                    document.getElementById('connection-status').style.color = "#00ff41";
+
+                    const data = resp.data;
+                    const logs = resp.logs;
+
+                    // Metrics
+                    document.getElementById('val-pnl').innerText = '$' + data.daily_pnl.toFixed(2);
+                    document.getElementById('val-balance').innerText = '$' + data.balance.toFixed(2);
+                    document.getElementById('val-signal').innerText = data.signal;
+                    document.getElementById('val-price').innerText = '$' + data.price.toLocaleString();
+
+                    // Gauge
+                    const confPct = (data.confidence * 100).toFixed(1);
+                    document.getElementById('confidence-text').innerText = confPct + '%';
+
+                    // Color change based on threshold (45%)
+                    const color = confPct >= 45.0 ? '#00ff41' : '#58a6ff';
+                    chart.data.datasets[0].backgroundColor[0] = color;
+                    chart.data.datasets[0].data = [confPct, 100 - confPct];
+                    chart.update();
+
+                    // Logs
+                    const logWin = document.getElementById('log-window');
+                    logs.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'log-entry';
+                        div.innerText = msg;
+                        logWin.appendChild(div);
+                    });
+                    if (logs.length > 0) logWin.scrollTop = logWin.scrollHeight; // Auto scroll
+
+                    // Positions Table
+                    const tbody = document.querySelector('#positions-table tbody');
+                    tbody.innerHTML = ''; // Clear existing
+
+                    data.positions.forEach(pos => {
+                        // Hyperliquid format handling
+                        // Assuming pos is dict like {coin: 'BTC', szi: '0.01', unrealizedPnl: '5.00'}
+                        // Handle nested 'position' key if from raw API
+                        const p = pos.position || pos;
+                        const size = parseFloat(p.szi);
+
+                        if (size !== 0) {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${p.coin}</td>
+                                <td style="color:${size > 0 ? 'var(--neon-green)' : 'var(--neon-red)'}">${size > 0 ? 'LONG' : 'SHORT'}</td>
+                                <td>${Math.abs(size)}</td>
+                                <td style="color:${parseFloat(p.unrealizedPnl) >= 0 ? 'var(--neon-green)' : 'var(--neon-red)'}">$${parseFloat(p.unrealizedPnl).toFixed(2)}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error("Poll Error:", err);
+                    document.getElementById('connection-status').innerHTML = "● Disconnected";
+                    document.getElementById('connection-status').style.color = "red";
+                });
+        }
+
+        // --- ACTIONS ---
+        function executeTrade(type) {
+            if (!confirm(`Are you sure you want to FORCE ${type.toUpperCase()}?`)) return;
+
+            fetch('/api/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: type })
+            })
+                .then(r => r.json())
+                .then(d => alert(d.status || d.error));
+        }
+
+        function emergencyClose() {
+            if (!confirm("⚠️ ARE YOU SURE? THIS WILL CLOSE ALL POSITIONS!")) return;
+            if (!confirm("⚠️ DOUBLE CHECK: REAL MONEY WILL BE FLATTENED.")) return;
+
+            fetch('/api/close_all', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => alert(d.status));
+        }
+
+        function fetchBalance() {
+            fetch('/api/fetch_balance', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    // Force update UI locally too from the response
+                    document.getElementById('val-balance').innerText = '$' + d.data.balance.toFixed(2);
+                    alert("Balance Fetched: $" + d.data.balance.toFixed(2));
+                });
+        }
+
+        // Start Polling (1s)
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+    </script>
+</body>
+
+</html>

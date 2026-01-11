@@ -1,0 +1,55 @@
+{
+    "description": "Golden State Configuration - Verified ~93% Win Rate (Jan 2-11 2026)",
+    "timestamp": "2026-01-11",
+    "configurations": {
+        "execution": {
+            "take_profit_pct": 0.015,
+            "stop_loss_pct": 0.008,
+            "circuit_breaker": {
+                "max_losses": 2,
+                "window_minutes": 60,
+                "cooldown_hours": 4
+            }
+        },
+        "filters": {
+            "mandalorian_shield": {
+                "rsi_min": 30,
+                "hurst_max": 0.50
+            },
+            "adaptive_volatility": {
+                "atr_threshold": 70,
+                "penalty_factor": 0.002
+            },
+            "ai_smart_filter": {
+                "rsi_short_min": 25
+            }
+        },
+        "model_thresholds": {
+            "mtf_scalper_5m": {
+                "long": 0.4500,
+                "short": 0.4500
+            },
+            "winner_hunter_1h": {
+                "long": 0.32776637956279225,
+                "short": 0.4089190788122878
+            }
+        }
+    },
+    "file_integrity": {
+        "models/mtf_scalper_5m_trio_xgb.json": "a4afb3a97622ca8e20c9fd6cc0373f20ff5f0b985464e11f7696e48978ca7c28",
+        "models/mtf_scalper_5m_trio_lgb.json": "386979a20c15500104d0aa8bd848ba3ee2b4eaa43518a04c1e05a908ac907eb6",
+        "models/mtf_scalper_5m_trio_cat.json": "d7daf02e1be58e8bc47540cc3c3227e019d831feecf0b69b4131fd02fb5e8935",
+        "models/winner_hunter_1h_trio_xgb.json": "9fdc44ba52dcf1aef9367e6dfa120dc1581b32f2c90a637735b3e69107a2056e",
+        "models/winner_hunter_1h_trio_lgb.json": "d11fde7a89f608ff4f86a6c2019afe0159942db8fbc59465aef130042c53fe86",
+        "models/winner_hunter_1h_trio_cat.json": "35a4b55b35e318e5213ec93d58b3490f894b74c3825ab216593b79274bdea30f",
+        "quant_engine.py": "74e8d94142a772842f53ee26589ef599aadc4959e81e04be7ff9d11f4a2adac3",
+        "utils/feature_engineer.py": "514a1ca01c4a3c5cc91c8d7dcc6a8a297b27d5a63955683e91d507200674bcee",
+        "utils/advanced_features.py": "1ed354ed3eb8132b87b0aad2f4c28e721aa5754b9ca4b119cafa406b4de8ebfa",
+        "utils/fetch_data.py": "489a5fd05315b167ae90756ef2d9db168ddf1dc055c4b59401ae5825d3b16e45",
+        "utils/trade_logger.py": "e69191167b1b5c9ab7e3870740c792aa02adbee6ce33980b9035dcb7df9c443b",
+        "utils/trend_filter.py": "9d57654c2b00b7f61189912c83a09c639d9bdf85b46aa53bdb325ced80549a8f",
+        "monitoring/performance_tracker.py": "b9cdaf25f7a1a4239f033f54db6a84aaf86926080ab0b83a02d8913d7346f547",
+        "monitoring/trade_exit_monitor.py": "fda5121e1c65e231041212a2f0335a54ceaabbba2359e19ba868fdd8766c3594",
+        "requirements.txt": "04eb060c8ca97576ad0ec5011723261c8cd6c7b26779ade0a1c6ffbf939dde03"
+    }
+}

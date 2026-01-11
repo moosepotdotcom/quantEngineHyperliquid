@@ -1,0 +1,19 @@
+{
+    "mtf_scalper_5m_v2_metadata": {
+        "target_precision_threshold_long": 0.6500,
+        "target_precision_threshold_short": 0.6500,
+        "feature_count": 231,
+        "model_type": "xgboost_binary",
+        "class_mapping": {
+            "0": "SHORT",
+            "1": "LONG"
+        },
+        "description": "V2 Binary Model - Reconstructed Jan 8 Trades (Class 0 = Short)"
+    },
+    "winner_hunter_1h_v2_metadata": {
+        "target_precision_threshold_long": 0.5000,
+        "target_precision_threshold_short": 0.5000,
+        "feature_count": 231,
+        "model_type": "xgboost_binary"
+    }
+}
