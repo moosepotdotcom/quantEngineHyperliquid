@@ -155,6 +155,37 @@ class CircuitBreaker:
 # DEFINITIVE FEATURE LIST (Extracted from Verified Models)
 MTF_FEATURE_LIST = ["rsi_7","rsi_14","rsi_21","stoch_k","stoch_d","williams_r","roc_5","roc_10","awesome_osc","kama","ppo","ppo_signal","ppo_hist","ema_5","ema_10","ema_20","ema_50","ema_100","ema_200","sma_10","sma_20","sma_50","macd","macd_signal","macd_hist","adx","adx_pos","adx_neg","cci","aroon_up","aroon_down","ichimoku_a","ichimoku_b","bb_high","bb_low","bb_mid","bb_width","bb_pct","atr_7","atr_14","atr_21","kc_high","kc_low","kc_mid","dc_high","dc_low","dc_mid","dc_width","obv","cmf","mfi","adi","eom","vpt","nvi","vwap","price_vs_ema20","price_vs_ema50","price_vs_bb_mid","ema_cross","trend_strength","atr_pct","volatility_regime","rsi_sma","rsi_divergence","vol_sma_20","volume_surge","body_size","upper_wick","lower_wick","is_bullish","return_1","return_3","return_5","return_10","range_pct","range_vs_atr","rsi_7_15m","rsi_14_15m","rsi_21_15m","stoch_k_15m","stoch_d_15m","williams_r_15m","roc_5_15m","roc_10_15m","awesome_osc_15m","kama_15m","ppo_15m","ppo_signal_15m","ppo_hist_15m","ema_5_15m","ema_10_15m","ema_20_15m","ema_50_15m","ema_100_15m","ema_200_15m","sma_10_15m","sma_20_15m","sma_50_15m","macd_15m","macd_signal_15m","macd_hist_15m","adx_15m","adx_pos_15m","adx_neg_15m","cci_15m","aroon_up_15m","aroon_down_15m","ichimoku_a_15m","ichimoku_b_15m","bb_high_15m","bb_low_15m","bb_mid_15m","bb_width_15m","bb_pct_15m","atr_7_15m","atr_14_15m","atr_21_15m","kc_high_15m","kc_low_15m","kc_mid_15m","dc_high_15m","dc_low_15m","dc_mid_15m","dc_width_15m","obv_15m","cmf_15m","mfi_15m","adi_15m","eom_15m","vpt_15m","nvi_15m","vwap_15m","price_vs_ema20_15m","price_vs_ema50_15m","price_vs_bb_mid_15m","ema_cross_15m","trend_strength_15m","atr_pct_15m","volatility_regime_15m","rsi_sma_15m","rsi_divergence_15m","vol_sma_20_15m","volume_surge_15m","body_size_15m","upper_wick_15m","lower_wick_15m","is_bullish_15m","return_1_15m","return_3_15m","return_5_15m","return_10_15m","range_pct_15m","range_vs_atr_15m","rsi_7_1h","rsi_14_1h","rsi_21_1h","stoch_k_1h","stoch_d_1h","williams_r_1h","roc_5_1h","roc_10_1h","awesome_osc_1h","kama_1h","ppo_1h","ppo_signal_1h","ppo_hist_1h","ema_5_1h","ema_10_1h","ema_20_1h","ema_50_1h","ema_100_1h","ema_200_1h","sma_10_1h","sma_20_1h","sma_50_1h","macd_1h","macd_signal_1h","macd_hist_1h","adx_1h","adx_pos_1h","adx_neg_1h","cci_1h","aroon_up_1h","aroon_down_1h","ichimoku_a_1h","ichimoku_b_1h","bb_high_1h","bb_low_1h","bb_mid_1h","bb_width_1h","bb_pct_1h","atr_7_1h","atr_14_1h","atr_21_1h","kc_high_1h","kc_low_1h","kc_mid_1h","dc_high_1h","dc_low_1h","dc_mid_1h","dc_width_1h","obv_1h","cmf_1h","mfi_1h","adi_1h","eom_1h","vpt_1h","nvi_1h","vwap_1h","price_vs_ema20_1h","price_vs_ema50_1h","price_vs_bb_mid_1h","ema_cross_1h","trend_strength_1h","atr_pct_1h","volatility_regime_1h","rsi_sma_1h","rsi_divergence_1h","vol_sma_20_1h","volume_surge_1h","body_size_1h","upper_wick_1h","lower_wick_1h","is_bullish_1h","return_1_1h","return_3_1h","return_5_1h","return_10_1h","range_pct_1h","range_vs_atr_1h","hurst","atr","atr_ratio","wick_ratio_upper","wick_ratio_lower","rsi","rsi_slope","price_slope"]
 
+STRATEGY_PRESETS = {
+    "Benchmark Mode": {
+        "description": "Standard verified setup (87.1% WR). Balanced volume.",
+        "threshold": 0.45,
+        "use_hurst": False,
+        "use_atr_penalty": False,
+        "use_circuit_breaker": True
+    },
+    "Full Shields": {
+        "description": "Maximum safety. Hurst Filter + ATR Penalty enabled.",
+        "threshold": 0.45,
+        "use_hurst": True,
+        "use_atr_penalty": True,
+        "use_circuit_breaker": True
+    },
+    "Hyper Aggressive": {
+        "description": "High trade volume. Lower threshold, no shields.",
+        "threshold": 0.40,
+        "use_hurst": False,
+        "use_atr_penalty": False,
+        "use_circuit_breaker": False
+    },
+    "Surgical Sniper": {
+        "description": "Ultra precise. High 0.50 threshold + ATR Penalty.",
+        "threshold": 0.50,
+        "use_hurst": True,
+        "use_atr_penalty": True,
+        "use_circuit_breaker": True
+    }
+}
+
 class TradingEngine:
     """Complete trading engine with Trio Ensembles"""
     
@@ -185,8 +216,19 @@ class TradingEngine:
         # Load Metadata and Thresholds
         self.load_thresholds()
         
-        self.trades_executed = []
-        self.signals_logged = []
+        # Dual-Bias Storage for UI
+        self.last_probs = {
+            'MTF': {'long': 0.0, 'short': 0.0},
+            'WH': {'long': 0.0, 'short': 0.0}
+        }
+        
+        # Strategy State
+        self.active_strategy = "Benchmark Mode"
+        self.use_hurst = False
+        self.use_atr_penalty = False
+        self.use_circuit_breaker = True
+        self.enable_mtf = True
+        self.enable_wh = True
         
         # Initialize logging and tracking
         self.logger = get_logger()
@@ -200,7 +242,35 @@ class TradingEngine:
         # Initialize Circuit Breaker
         self.circuit_breaker = CircuitBreaker(max_losses=2, window_minutes=60, cooldown_hours=4)
         
-        print("   ✅ All systems initialized")
+        print(f"   ✅ All systems initialized | Strategy: {self.active_strategy}")
+
+    def apply_strategy_preset(self, name):
+        """Switch to a pre-defined strategy configuration"""
+        if name not in STRATEGY_PRESETS:
+            print(f"   ⚠️ Strategy {name} not found! Keeping current.")
+            return False
+            
+        preset = STRATEGY_PRESETS[name]
+        self.active_strategy = name
+        self.use_hurst = preset["use_hurst"]
+        self.use_atr_penalty = preset["use_atr_penalty"]
+        self.use_circuit_breaker = preset["use_circuit_breaker"]
+        
+        # Update Thresholds
+        self.mtf_threshold_long = preset["threshold"]
+        self.mtf_threshold_short = preset["threshold"]
+        
+        # Propagate to managers
+        if hasattr(self, 'mtf_elastic'):
+            self.mtf_elastic.update_thresholds(self.mtf_threshold_long, self.mtf_threshold_short)
+            
+        print(f"\n{'='*70}")
+        print(f"🔄 STRATEGY SWITCH: {name}")
+        print(f"📜 {preset['description']}")
+        print(f"🛡️ Hurst: {'ON' if self.use_hurst else 'OFF'} | ATR Penalty: {'ON' if self.use_atr_penalty else 'OFF'}")
+        print(f"🎯 Threshold: {preset['threshold']:.2%}")
+        print(f"{'='*70}\n")
+        return True
 
     def load_thresholds(self):
         """Load thresholds from metadata files"""
@@ -386,6 +456,9 @@ class TradingEngine:
             prob_long = float(probas[1])
             prob_short = float(probas[2])
             
+            # Update Dual-Bias UI Storage
+            self.last_probs['WH'] = {'long': prob_long, 'short': prob_short}
+            
             direction = None
             confidence = 0.0
             
@@ -570,6 +643,9 @@ class TradingEngine:
         prob_long = float(probas[1])
         prob_short = float(probas[2])
         
+        # Update Dual-Bias UI Storage
+        self.last_probs['MTF'] = {'long': prob_long, 'short': prob_short}
+        
         direction = None
         confidence = 0.0
         
@@ -608,20 +684,19 @@ class TradingEngine:
             
             # Strick check: If buying a dip (RSI < 30), it MUST be Mean Reverting (H < 0.5).
             # If H > 0.5, it's a Random Walk or Trend (Falling Knife).
-            if direction == 'LONG' and rsi < 30 and hurst > 0.50:
+            if self.use_hurst and direction == 'LONG' and rsi < 30 and hurst > 0.50:
                 print(f"   🛑 MANDALORIAN SHIELD: Blocked Falling Knife (Hurst={hurst:.3f}, RSI={rsi:.1f})")
                 return None, confidence
             
             # 🛡️ STATISTICAL SHIELD 2.0 (Adaptive Volatility) 🛡️
             # Penalize confidence requirement in high volatility conditions
-            atr_val = latest_data.get('atr_14', 50) # Default to low vol if missing
+            atr_val = latest_data.get('atr_14', 50)
             
-            # Base Threshold (from metadata or default 0.45)
-            # We use the active threshold from Elastic Manager, which defaults to 0.45
+            # Base Threshold
             required_conf = self.mtf_elastic.active_threshold_long if direction == 'LONG' else self.mtf_elastic.active_threshold_short
             
-            # Penalty: +0.002 per ATR point > 70
-            if atr_val > 70:
+            # Apply ATR Penalty ONLY if enabled by strategy
+            if self.use_atr_penalty and atr_val > 70:
                 penalty = (atr_val - 70) * 0.002
                 required_conf += penalty
                 
@@ -767,11 +842,28 @@ class TradingEngine:
                     continue
 
                 # Check Winner Hunter
-                print("\n🏆 Checking Winner Hunter (1H)...")
-                signal, confidence = self.check_winner_hunter()
+                signal = None
+                confidence = 0.0
+                if self.enable_wh:
+                    print("\n🏆 Checking Winner Hunter (1H)...")
+                    try:
+                        signal, confidence = self.check_winner_hunter()
+                    except Exception as e:
+                        print(f"⚠️ Error in Winner Hunter: {e}")
+                else:
+                    print("\n🏆 Winner Hunter: DISABLED")
                 
-                print("\n🎯 Checking MTF Scalper (5M)...")
-                mtf_signal, mtf_confidence = self.check_mtf_scalper()
+                # Check MTF Scalper
+                mtf_signal = None
+                mtf_confidence = 0.0
+                if self.enable_mtf:
+                    print("\n🎯 Checking MTF Scalper (5M)...")
+                    try:
+                        mtf_signal, mtf_confidence = self.check_mtf_scalper()
+                    except Exception as e:
+                        print(f"⚠️ Error in MTF Scalper: {e}")
+                else:
+                    print("\n🎯 MTF Scalper: DISABLED")
                 
                 
                 # ===== PHASE 2: TREND FILTER =====

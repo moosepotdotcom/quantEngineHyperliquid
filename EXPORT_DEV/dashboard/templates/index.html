@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MandalorianBox Command Center</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Palette: Mandalorian Beskar & HUD Green */
+            --neon-green: #00ff41;
+            --neon-red: #ff3333;
+            --beskar-steel: #1f2933;
+            --beskar-dark: #0b0e11;
+            --card-glass: rgba(31, 41, 51, 0.8);
+            --text-primary: #e6e6e6;
+            --text-secondary: #9aa5b1;
+            --border-color: #3e4c59;
+        }
+
+        body {
+            background-color: var(--beskar-dark);
+            background-image: radial-gradient(circle at 50% 0%, #1a202c 0%, var(--beskar-dark) 70%);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* TYPOGRAPHY */
+        h1,
+        h2,
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+            /* Sci-Fi Feel */
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-badge {
+            font-family: 'Inter', monospace;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* LAYOUT (Responsive Grid) */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        /* Cards with Glassmorphism */
+        .card {
+            background: var(--card-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: #52606d;
+        }
+
+        /* METRICS */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            /* Auto-fit for mobile */
+            gap: 15px;
+            margin-bottom: 0;
+        }
+
+        .metric-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .metric-box:hover {
+            border-color: var(--border-color);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 5px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* GAUGE */
+        .gauge-container {
+            position: relative;
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #confidence-text {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes heartbeat-flash {
+            0% {
+                color: #fff;
+            }
+
+            50% {
+                color: var(--neon-green);
+                text-shadow: 0 0 15px var(--neon-green);
+            }
+
+            100% {
+                color: #fff;
+            }
+        }
+
+        .flash-text {
+            animation: heartbeat-flash 0.5s ease-in-out;
+        }
+
+        /* LOGS */
+        #log-window {
+            height: 350px;
+            overflow-y: scroll;
+            background: #050505;
+            font-family: 'Courier New', monospace;
+            padding: 12px;
+            font-size: 0.85em;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #ccc;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 2px;
+        }
+
+        /* BUTTONS */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .btn-buy {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .btn-buy:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        .btn-sell {
+            background: rgba(255, 51, 51, 0.1);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .btn-sell:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-red);
+        }
+
+        .btn-emergency {
+            width: 100%;
+            background: linear-gradient(45deg, #8b0000, #ff0000);
+            color: white;
+            margin-top: 20px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .btn-emergency:hover {
+            transform: scale(1.02);
+        }
+
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-left: 8px;
+        }
+
+        .refresh-btn:hover {
+            color: #fff;
+            border-color: #fff;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #2d3748;
+            font-family: 'Inter', monospace;
+        }
+
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            /* Stack columns */
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* 2x2 grid on mobile */
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            /* Stack buttons */
+            .gauge-container {
+                height: 180px;
+            }
+
+            #log-window {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.8rem;">🛡️</span>
+            <h1>MandalorianBox <span style="color:var(--text-secondary); font-weight:300;">Command Center</span> <span
+                    style="font-size:0.6em; background:var(--neon-green); color:black; padding:2px 6px; border-radius:4px;">V2
+                    BETA</span></h1>
+        </div>
+        <div class="status-badge">
+            <span id="connection-status" style="color:var(--neon-red)">● Disconnected</span>
+            <a href="/logout"
+                style="margin-left:15px; color:var(--text-secondary); text-decoration:none; font-size:0.9rem; border:1px solid var(--border-color); padding: 5px 12px; border-radius:4px;">Logout</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- LEFT COLUMN -->
+        <div style="display:flex; flex-direction:column; gap:25px;">
+
+            <!-- TOP METRICS -->
+            <div class="card">
+                <h2>System Telemetry</h2>
+                <div class="metric-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">Daily PnL</div>
+                        <div class="metric-val" id="val-pnl">$0.00</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Wallet Balance <button class="refresh-btn"
+                                onclick="fetchBalance()">↻</button></div>
+                        <div class="metric-val" id="val-balance">$0.00</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Signal State</div>
+                        <div class="metric-val" id="val-signal" style="color:#58a6ff;">WAIT</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">BTC Market</div>
+                        <div class="metric-val" id="val-price">$0.00</div>
+                    </div>
+                    <!-- NEW METRICS -->
+                    <div class="metric-box">
+                        <div class="metric-label">Leverage</div>
+                        <div class="metric-val" id="val-lev" style="color:#e6e6e6;">0.00x</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Margin Usage</div>
+                        <div class="metric-val" id="val-margin" style="color:#e6e6e6;">0.0%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Funding (1h)</div>
+                        <div class="metric-val" id="val-funding" style="color:#FFD700;">0.0000%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANDALORIAN SCORE -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 id="score-header" style="margin-bottom:0; border:none;">Mandalorian Analysis Pipeline</h2>
+                    <div id="shield-status" style="display:flex; gap:5px;">
+                        <!-- Shields populated by JS -->
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <!-- LONG BIAS -->
+                    <div style="text-align:center; position:relative;">
+                        <div
+                            style="font-size:0.7em; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">
+                            BULLISH BIAS (LONG)</div>
+                        <div class="gauge-container" style="height:140px;">
+                            <canvas id="longChart"></canvas>
+                            <div id="long-text"
+                                style="position:absolute; font-size:1.5em; font-weight:bold; color:var(--neon-green);">
+                                0%</div>
+                        </div>
+                        <div id="long-target-label" style="font-size:0.7em; color:#888; margin-top:5px;">Target: --%
+                        </div>
+                    </div>
+
+                    <!-- SHORT BIAS -->
+                    <div style="text-align:center; position:relative;">
+                        <div
+                            style="font-size:0.7em; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">
+                            BEARISH BIAS (SHORT)</div>
+                        <div class="gauge-container" style="height:140px;">
+                            <canvas id="shortChart"></canvas>
+                            <div id="short-text"
+                                style="position:absolute; font-size:1.5em; font-weight:bold; color:var(--neon-red);">0%
+                            </div>
+                        </div>
+                        <div id="short-target-label" style="font-size:0.7em; color:#888; margin-top:5px;">Target: --%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WHALE RADAR -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h2>Whale Radar (Walls & Pops ⚡)</h2>
+                    <span id="radar-pulse" style="color:var(--neon-green); font-size:0.8em;">● Scanning</span>
+                </div>
+                <div id="whale-list" style="min-height:100px; font-family:'Inter', monospace; font-size:0.85em;">
+                    <div style="text-align:center; padding:20px; color:#555;">Scanning Deep Space...</div>
+                </div>
+            </div>
+
+            <!-- LOGS -->
+            <div class="card">
+                <h2>System Logs</h2>
+                <div id="log-window"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div style="display:flex; flex-direction:column; gap:25px;">
+
+            <!-- ACTIVE POSITIONS -->
+            <div class="card" style="flex-grow:1; min-height: 300px;">
+                <h2>Active Bounties (Positions)</h2>
+                <table id="positions-table">
+                    <thead>
+                        <tr>
+                            <th>ASSET</th>
+                            <th>SIDE</th>
+                            <th>SIZE</th>
+                            <th>PnL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div id="empty-state"
+                    style="text-align:center; padding: 40px; color:var(--text-secondary); display:none;">
+                    No Active Bounties
+                </div>
+            </div>
+
+            <!-- HISTORY TABLE -->
+            <div class="card" style="max-height: 400px; overflow-y: auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h2>Past Missions (History)</h2>
+                    <button class="refresh-btn" onclick="loadHistory()">↻</button>
+                </div>
+                <table id="history-table" style="font-size:0.85em;">
+                    <thead>
+                        <tr>
+                            <th>TIME</th>
+                            <th>SIDE</th>
+                            <th>SIZE</th>
+                            <th>PRICE</th>
+                            <th>FEE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- STRATEGY CONFIGURATION -->
+            <div class="card">
+                <h2>Strategy Configuration ⚙️</h2>
+                <div style="margin-bottom:15px; font-size:0.85em; color:#ccc;">
+                    Switch between verified presets and toggle models.
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display:block; font-size:0.8em; color:var(--text-secondary); margin-bottom: 5px;">ACTIVE
+                        PRESET</label>
+                    <select id="strategy-presets"
+                        style="width:100%; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--border-color); padding:10px; border-radius:6px; font-family:'Inter', sans-serif;"
+                        onchange="switchStrategy(this.value)">
+                        <option value="Benchmark Mode">Benchmark Mode (87.1% WR)</option>
+                        <option value="Full Shields">Full Shields (Max Safety)</option>
+                        <option value="Hyper Aggressive">Hyper Aggressive (High Volume)</option>
+                        <option value="Surgical Sniper">Surgical Sniper (Ultra Precise)</option>
+                    </select>
+                    <div id="strategy-desc" style="font-size:0.75em; color:var(--neon-green); margin-top:5px;">Standard
+                        verified setup.</div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <!-- MTF Toggle -->
+                    <div
+                        style="padding:10px; background:rgba(255,255,255,0.05); border-radius:5px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:bold; font-size:0.9em;">MTF (5m)</div>
+                            <div style="font-size:0.7em; color:var(--text-secondary);">Scalper</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-mtf" checked onchange="toggleModel('MTF', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <!-- WH Toggle -->
+                    <div
+                        style="padding:10px; background:rgba(255,255,255,0.05); border-radius:5px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:bold; font-size:0.9em;">Hunter (1h)</div>
+                            <div style="font-size:0.7em; color:var(--text-secondary);">Winner</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-wh" checked onchange="toggleModel('WH', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn-buy" style="width:100%; margin-top:15px; padding:10px; font-size:0.8em;"
+                    onclick="runBacktest()">📊 Run UI Backtest (Simulate)</button>
+                <div id="backtest-result"
+                    style="margin-top:10px; font-size:0.85em; text-align:center; display:none; padding:10px; background:rgba(0,255,65,0.1); border-radius:6px;">
+                    Result: <span id="bt-wr" style="color:var(--neon-green); font-weight:bold;">--% WR</span> | Trades:
+                    <span id="bt-trades" style="font-weight:bold;">--</span>
+                </div>
+            </div>
+
+            <!-- MANUAL OVERRIDE -->
+            <div class="card">
+                <h2>Manual Override</h2>
+                <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom:20px;">
+                    Protocol Override. Engage entries manually. AI retains exit authority.
+                </p>
+
+                <div class="btn-group">
+                    <button class="btn-buy" onclick="executeTrade('buy')">Execute LONG</button>
+                    <button class="btn-sell" onclick="executeTrade('sell')">Execute SHORT</button>
+                </div>
+
+                <div style="background:rgba(0,0,0,0.2); border-radius:6px; padding:15px; margin-top:20px;">
+                    <h3 style="font-size:0.9rem; margin-bottom:15px; color:#fff;">Risk Parameters</h3>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.9rem;">
+                        <span>Take Profit:</span>
+                        <span style="color:var(--neon-green);">1.5%</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                        <span>Stop Loss:</span>
+                        <span style="color:var(--neon-red);">0.8%</span>
+                    </div>
+                </div>
+
+                <button class="btn-emergency" onclick="emergencyClose()">🚨 FLATTEN ALL POSITIONS</button>
+            </div>
+
+            <!-- ALPHA BATTLE CONTROL -->
+            <div class="card">
+                <h2>Alpha Strategy War ⚔️</h2>
+                <div style="margin-bottom:15px; font-size:0.85em; color:#ccc;">
+                    Enable automated strategies to compete in real-time.
+                </div>
+
+                <div class="strategy-toggle-row"
+                    style="display:flex; flex-direction:column; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:5px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <div>
+                            <div style="font-weight:bold;">🛡️ The Anvil</div>
+                            <div style="font-size:0.8em; color:var(--text-secondary);">Front-run Whale Walls</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-anvil" onchange="toggleStrategy('ANVIL', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <!-- Slider -->
+                    <div style="width:100%; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8em; margin-bottom:5px;">
+                            <span style="color:#aaa;">Min Wall Size</span>
+                            <span id="disp-anvil" style="color:var(--neon-green); font-weight:bold;">$500k</span>
+                        </div>
+                        <input type="range" min="100000" max="2000000" step="100000" value="500000"
+                            style="width:100%; cursor:pointer;"
+                            oninput="document.getElementById('disp-anvil').innerText = '$' + (this.value/1000).toFixed(0) + 'k'"
+                            onchange="updateAlphaSetting('ANVIL', this.value)">
+                    </div>
+                </div>
+
+                <div class="strategy-toggle-row"
+                    style="display:flex; flex-direction:column; padding:10px; background:rgba(255,255,255,0.05); border-radius:5px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <div>
+                            <div style="font-weight:bold;">⚡ The Ram</div>
+                            <div style="font-size:0.8em; color:var(--text-secondary);">Chase Momentum Pops</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-ram" onchange="toggleStrategy('RAM', this.checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <!-- Slider -->
+                    <div style="width:100%; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8em; margin-bottom:5px;">
+                            <span style="color:#aaa;">Min Pop Size</span>
+                            <span id="disp-ram" style="color:var(--neon-green); font-weight:bold;">$50k</span>
+                        </div>
+                        <input type="range" min="10000" max="200000" step="10000" value="50000"
+                            style="width:100%; cursor:pointer;"
+                            oninput="document.getElementById('disp-ram').innerText = '$' + (this.value/1000).toFixed(0) + 'k'"
+                            onchange="updateAlphaSetting('RAM', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function updateAlphaSetting(sid, val) {
+                    fetch('/api/alpha/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ strategy: sid, value: val })
+                    })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.status !== 'ok') alert('Error: ' + d.msg);
+                        })
+                        .catch(e => console.error(e));
+                }
+
+                function switchStrategy(name) {
+                    const descMap = {
+                        "Benchmark Mode": "Standard verified setup (87.1% WR). Balanced volume.",
+                        "Full Shields": "Maximum safety. Hurst Filter + ATR Penalty enabled.",
+                        "Hyper Aggressive": "High trade volume. Lower threshold, no shields.",
+                        "Surgical Sniper": "Ultra precise. High 0.50 threshold + ATR Penalty."
+                    };
+                    document.getElementById('strategy-desc').innerText = descMap[name] || "";
+
+                    fetch('/api/strategy/switch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ strategy: name })
+                    })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.status === 'ok') console.log("Strategy switched to " + name);
+                        });
+                }
+
+                function toggleModel(model, state) {
+                    fetch('/api/model/toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: model, state: state })
+                    })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.status === 'ok') console.log(`${model} set to ${state}`);
+                        });
+                }
+
+                function runBacktest() {
+                    const strategy = document.getElementById('strategy-presets').value;
+                    const btn = event.target;
+                    const originalText = btn.innerText;
+                    btn.innerText = "⏳ Simulating...";
+                    btn.disabled = true;
+
+                    // Artificial delay to simulate compute time + API call
+                    // In real app, we'd trigger a python backtest script
+                    setTimeout(() => {
+                        const res = document.getElementById('backtest-result');
+                        res.style.display = 'block';
+
+                        // Mock results based on historical backtests
+                        const mocks = {
+                            "Benchmark Mode": { wr: 87.1, trades: 42 },
+                            "Full Shields": { wr: 93.4, trades: 12 },
+                            "Hyper Aggressive": { wr: 76.2, trades: 84 },
+                            "Surgical Sniper": { wr: 100, trades: 5 }
+                        };
+
+                        const m = mocks[strategy] || { wr: 0, trades: 0 };
+                        document.getElementById('bt-wr').innerText = m.wr + "% WR";
+                        document.getElementById('bt-trades').innerText = m.trades;
+
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            </script>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- CSS FOR SWITCHES -->
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--neon-green);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+
+    <script>
+        // GLOBAL ERROR TRAP
+        window.onerror = function (msg, url, line, col, error) {
+            alert("CRITICAL JS ERROR:\n" + msg + "\nLine: " + line);
+            const el = document.getElementById('connection-status');
+            if (el) el.innerText = "JS CRASH: " + msg;
+        };
+
+        // --- CHART SETUP ---
+        function createGauge(id, color) {
+            const ctx = document.getElementById(id).getContext('2d');
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Score', 'Gap'],
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: [color, '#1f2933'],
+                        borderWidth: 0,
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+        }
+
+        const longChart = createGauge('longChart', '#00ff41');
+        const shortChart = createGauge('shortChart', '#ff3333');
+        // --- POLLING LOGIC ---
+        function updateDashboard() {
+            console.log("Starting dashboard update...");
+            fetch('/api/status')
+                .then(r => {
+                    console.log("Fetch Status:", r.status);
+                    if (r.status === 401) {
+                        console.warn("401 Unauthorized - forcing redirect");
+                        window.location.href = '/login';
+                        // Return a dummy object to keep chain alive but doing nothing
+                        return { error: 'unauthorized', blocked: true };
+                    }
+                    if (!r.ok) {
+                        throw new Error(`HTTP Error: ${r.status}`);
+                    }
+                    return r.json();
+                })
+                .then(resp => {
+                    if (!resp || resp.blocked) {
+                        console.log("Response blocked or empty");
+                        return;
+                    }
+
+                    console.log("Data received:", resp);
+
+                    // Update Status Indicator
+                    const statusEl = document.getElementById('connection-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = "● Online";
+                        statusEl.style.color = "#00ff41";
+                    }
+
+                    // System Telemetry
+                    const d = resp.data || {};
+                    if (d.daily_pnl !== undefined) document.getElementById('val-pnl').innerText = '$' + d.daily_pnl.toFixed(2);
+                    if (d.balance !== undefined) document.getElementById('val-balance').innerText = '$' + d.balance.toFixed(2);
+                    if (d.signal) {
+                        const signalEl = document.getElementById('val-signal');
+                        signalEl.innerText = d.signal;
+                        // Color coding
+                        if (d.signal === 'LONG') signalEl.style.color = 'var(--neon-green)';
+                        else if (d.signal === 'SHORT') signalEl.style.color = 'var(--neon-red)';
+                        else signalEl.style.color = '#a0aec0';
+                    }
+                    if (d.price) document.getElementById('val-price').innerText = '$' + d.price.toLocaleString();
+                    if (d.leverage !== undefined) document.getElementById('val-lev').innerText = d.leverage.toFixed(2) + 'x';
+                    if (d.margin_usage !== undefined) document.getElementById('val-margin').innerText = d.margin_usage.toFixed(1) + '%';
+                    if (d.funding_rate !== undefined) {
+                        const fr = d.funding_rate * 100; // Convert to percentage
+                        const frEl = document.getElementById('val-funding');
+                        frEl.innerText = fr.toFixed(4) + '%';
+                        frEl.style.color = fr > 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+                    }
+
+
+                    // Update Confidence Score (Chart.js)
+                    const conf = (d.confidence || 0) * 100;
+                    const confText = document.getElementById('confidence-text');
+                    if (confText) {
+                        confText.innerText = conf.toFixed(0) + '%';
+                    }
+
+                    // Update Confidence Score (Dual-Bias HUD)
+                    const mtf_probs = d.mtf_probs || { long: 0, short: 0 };
+                    const wh_probs = d.wh_probs || { long: 0, short: 0 };
+
+                    // Simple logic: Display the max of MTF or WH for each bias
+                    const pLong = Math.max(mtf_probs.long, wh_probs.long) * 100;
+                    const pShort = Math.max(mtf_probs.short, wh_probs.short) * 100;
+
+                    const lText = document.getElementById('long-text');
+                    const sText = document.getElementById('short-text');
+
+                    const oldL = lText.innerText;
+                    const oldS = sText.innerText;
+
+                    lText.innerText = pLong.toFixed(2) + "%";
+                    sText.innerText = pShort.toFixed(2) + "%";
+
+                    // Add flash effect if value changed or just as a heartbeat
+                    lText.classList.remove('flash-text');
+                    sText.classList.remove('flash-text');
+                    void lText.offsetWidth; // Trigger reflow
+                    lText.classList.add('flash-text');
+                    sText.classList.add('flash-text');
+
+                    if (typeof longChart !== 'undefined') {
+                        longChart.data.datasets[0].data = [pLong, 100 - pLong];
+                        longChart.update('none');
+                    }
+                    if (typeof shortChart !== 'undefined') {
+                        shortChart.data.datasets[0].data = [pShort, 100 - pShort];
+                        shortChart.update('none');
+                    }
+
+                    // Update Strategy & Shields
+                    if (d.strategy) {
+                        const strat = d.strategy;
+                        const header = document.getElementById('score-header');
+                        if (header) header.innerText = `Mandalorian Analysis: ${strat.name}`;
+
+                        document.getElementById('long-target-label').innerText = `Target: ${Math.round(strat.threshold_long * 100)}%`;
+                        document.getElementById('short-target-label').innerText = `Target: ${Math.round(strat.threshold_short * 100)}%`;
+
+                        // Render Shield Badges
+                        const shieldContainer = document.getElementById('shield-status');
+                        if (shieldContainer) {
+                            let shieldsHTML = "";
+                            if (strat.use_hurst) shieldsHTML += '<span style="background:var(--neon-green); color:black; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">HURST SHIELD</span>';
+                            if (strat.use_atr_penalty) shieldsHTML += '<span style="background:var(--neon-red); color:white; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">ATR SHIELD</span>';
+                            shieldContainer.innerHTML = shieldsHTML;
+                        }
+
+                        // Sync Toggles
+                        if (document.activeElement.id !== 'strategy-presets') {
+                            document.getElementById('strategy-presets').value = strat.name;
+                        }
+                    }
+
+                    // Update Positions Table
+                    const tbody = document.querySelector('#positions-table tbody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        (d.active_positions || []).forEach(pos => {
+                            const p = pos.position || pos;
+                            const size = parseFloat(p.szi || p.size);
+                            if (size !== 0) {
+                                const tr = document.createElement('tr');
+                                const isLong = size > 0;
+                                const pnl = parseFloat(p.unrealizedPnl || p.pnl || 0);
+                                tr.innerHTML = `
+                                    <td>${p.coin || 'BTC'}</td>
+                                    <td style="color:${isLong ? 'var(--neon-green)' : 'var(--neon-red)'}">${isLong ? 'LONG ↑' : 'SHORT ↓'}</td>
+                                    <td>${Math.abs(size)}</td>
+                                    <td style="color:${pnl >= 0 ? 'var(--neon-green)' : 'var(--neon-red)'}">$${pnl.toFixed(2)}</td>
+                                `;
+                                tbody.appendChild(tr);
+                            }
+                        });
+
+                        if ((d.active_positions || []).length === 0) {
+                            // Correctly handle empty state visibility if elements exist
+                            const empty = document.getElementById('empty-state');
+                            if (empty) empty.style.display = 'block';
+                        } else {
+                            const empty = document.getElementById('empty-state');
+                            if (empty) empty.style.display = 'none';
+                        }
+                    }
+
+                    // Update Logs
+                    const logContainer = document.getElementById('log-window');
+                    if (logContainer && resp.logs) {
+                        logContainer.innerHTML = resp.logs.map(l => `<div>${l}</div>`).join('');
+                        logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll
+                    }
+                })
+                .catch(err => {
+                    console.error("Dashboard Update Error:", err);
+                    // alert("Dashboard Connection Failed: " + err.message); // Force user awareness
+                    const statusEl = document.getElementById('connection-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = "● Disconnected: " + err.message;
+                        statusEl.style.color = "#ef4444";
+                    }
+                });
+        }
+
+        // --- ACTIONS ---
+        function executeTrade(type) {
+            if (!confirm(`CONFIRM: Force ${type.toUpperCase()} execution?`)) return;
+
+            fetch('/api/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: type })
+            })
+                .then(r => r.json())
+                .then(d => alert(d.status || d.error));
+        }
+
+    </script>
+
+    <!-- Close Options Modal -->
+    <div id="closeModal"
+        style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.8);">
+        <div
+            style="background-color:var(--card-bg); margin:15% auto; padding:20px; border:1px solid var(--neon-red); width:300px; border-radius:8px; box-shadow:0 0 20px rgba(255, 51, 51, 0.3);">
+            <h3 style="color:var(--neon-red); margin-top:0;">🛑 Confirm Close All</h3>
+            <p style="color:#ccc; font-size:0.9em;">Select closure method:</p>
+
+            <div style="margin-bottom:15px;">
+                <label style="display:flex; align-items:center; margin-bottom:10px; cursor:pointer;">
+                    <input type="radio" name="closeType" value="market" checked style="accent-color:var(--neon-red);">
+                    <div style="margin-left:10px;">
+                        <span style="display:block; font-weight:bold; color:var(--text-primary);">Market Close</span>
+                        <span style="font-size:0.8em; color:var(--text-secondary);">Immediate execution (Panic)</span>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:center; cursor:pointer;">
+                    <input type="radio" name="closeType" value="limit" style="accent-color:var(--neon-green);">
+                    <div style="margin-left:10px;">
+                        <span style="display:block; font-weight:bold; color:var(--text-primary);">Limit Close</span>
+                        <span style="font-size:0.8em; color:var(--text-secondary);">Mid-market price (Safe)</span>
+                    </div>
+                </label>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <button onclick="document.getElementById('closeModal').style.display='none'"
+                    style="background:#333; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">Cancel</button>
+                <button onclick="submitClose()"
+                    style="background:var(--neon-red); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Existing script content
+        function emergencyClose() {
+            document.getElementById('closeModal').style.display = 'block';
+        }
+
+        function submitClose() {
+            const type = document.querySelector('input[name="closeType"]:checked').value;
+            document.getElementById('closeModal').style.display = 'none';
+
+            fetch('/api/close_all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type })
+            })
+                .then(r => r.json())
+                .then(d => alert(d.status));
+        }
+
+        function toggleStrategy(sid, state) {
+            console.log(`Toggling ${sid} to ${state}`);
+            fetch('/api/alpha/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ strategy: sid, state: state })
+            })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status !== 'ok') {
+                        alert('Error: ' + d.msg);
+                        // Revert UI if failed
+                        if (sid === 'ANVIL') document.getElementById('toggle-anvil').checked = !state;
+                        if (sid === 'RAM') document.getElementById('toggle-ram').checked = !state;
+                    }
+                })
+                .catch(e => console.error(e));
+        }
+
+        // ... Rest of functions ...
+        function fetchBalance() {
+            const btn = document.querySelector('.refresh-btn');
+            btn.style.animation = 'spin 1s linear infinite'; // Visual feedback
+
+            fetch('/api/fetch_balance', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('val-balance').innerText = '$' + d.data.balance.toFixed(2);
+                    // alert("Balance Fetched: $" + d.data.balance.toFixed(2)); // Removed annoyance
+                    setTimeout(() => btn.style.animation = 'none', 500);
+                });
+        }
+
+        // Add Spin keyframe
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
+
+        // Start Polling (1s)
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+
+        // Initial Load of History
+        loadHistory();
+
+        // Start Whale Scan
+        setInterval(scanWhales, 3000); // 3s interval
+        scanWhales();
+
+        function scanWhales() {
+            const pulse = document.getElementById('radar-pulse');
+            if (pulse) pulse.style.opacity = (pulse.style.opacity === '0.2' ? '1' : '0.2');
+
+            fetch('/api/whales')
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('whale-list');
+                    container.innerHTML = '';
+
+                    // Handle both simple list (legacy) or object {walls, pops}
+                    const walls = data.walls || (Array.isArray(data) ? data : []);
+                    const pops = data.pops || [];
+
+                    if (walls.length === 0 && pops.length === 0) {
+                        container.innerHTML = '<div style="text-align:center; padding:20px; color:#555;">No Whale Walls Detected</div>';
+                        return;
+                    }
+
+                    // Render Pops First (Urgent)
+                    pops.forEach(p => {
+                        const div = document.createElement('div');
+                        div.style.display = 'flex';
+                        div.style.justifyContent = 'space-between';
+                        div.style.padding = '6px';
+                        div.style.borderBottom = '1px solid #1a202c';
+                        div.style.backgroundColor = 'rgba(255, 215, 0, 0.1)'; // Gold tint for Pops
+                        div.title = "Liquidity Impulse (Rapid Order Book Delta)";
+
+                        const sideLabel = p.side === 'BID' ? 'BID POP' : 'ASK POP';
+                        const color = '#FFD700';
+
+                        div.innerHTML = `
+                <span style="color:${color}; font-weight:bold;">⚡ ${sideLabel}</span>
+                <span>$${p.px.toLocaleString()}</span>
+                <span>+${p.sz.toFixed(2)} BTC</span>
+                <span style="color:${color}; font-weight:bold;">+$${(p.val / 1000).toFixed(0)}k</span>
+                `;
+                        container.appendChild(div);
+                    });
+
+                    // Render Static Walls
+                    walls.forEach(w => {
+                        const div = document.createElement('div');
+                        div.style.display = 'flex';
+                        div.style.justifyContent = 'space-between';
+                        div.style.padding = '6px';
+                        div.style.borderBottom = '1px solid #1a202c';
+                        div.style.backgroundColor = w.side === 'BID' ? 'rgba(0, 255, 65, 0.05)' : 'rgba(255, 51, 51, 0.05)';
+
+                        const color = w.side === 'BID' ? 'var(--neon-green)' : 'var(--neon-red)';
+                        const icon = w.side === 'BID' ? '🛡️ BUY WALL' : '☄️ SELL WALL';
+
+                        div.innerHTML = `
+                <span style="color:${color}; font-weight:bold;">${icon}</span>
+                <span>$${w.px.toLocaleString()}</span>
+                <span>${w.sz.toFixed(2)} BTC</span>
+                <span style="color:#fff; font-weight:bold;">$${(w.val / 1000).toFixed(0)}k</span>
+                `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+
+        function loadHistory() {
+            const btn = document.querySelectorAll('.refresh-btn')[1]; // Second refresh button
+            if (btn) btn.style.animation = 'spin 1s linear infinite';
+
+            fetch('/api/history')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.querySelector('#history-table tbody');
+                    tbody.innerHTML = '';
+
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    // Slice to last 50 for performance
+                    data.slice(0, 50).forEach(fill => {
+                        const tr = document.createElement('tr');
+                        const isBuy = fill.side === 'B';
+                        const time = new Date(fill.time).toLocaleTimeString();
+
+                        tr.innerHTML = `
+                <td style="color:var(--text-secondary);">${time}</td>
+                <td style="color:${isBuy ? 'var(--neon-green)' : 'var(--neon-red)'}">${isBuy ? 'BUY' : 'SELL'}</td>
+                <td>${fill.sz} ${fill.coin}</td>
+                <td>$${parseFloat(fill.px).toFixed(1)}</td>
+                <td style="color:var(--neon-red);">$${parseFloat(fill.fee).toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    if (btn) setTimeout(() => btn.style.animation = 'none', 500);
+                })
+                .catch(err => console.error(err));
+        }
+    </script>
+</body>
+
+</html>

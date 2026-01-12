@@ -209,6 +209,22 @@ class TradingThread(threading.Thread):
                     self.latest_data['confidence'] = max_conf
                     self.latest_data['timestamp'] = str(datetime.now().strftime("%H:%M:%S"))
                     
+                    # Store Strategy Metadata
+                    engine = self.engine.paper_engine
+                    self.latest_data['strategy'] = {
+                        'name': engine.active_strategy,
+                        'threshold_long': engine.mtf_threshold_long,
+                        'threshold_short': engine.mtf_threshold_short,
+                        'use_hurst': getattr(engine, 'use_hurst', False),
+                        'use_atr_penalty': getattr(engine, 'use_atr_penalty', False),
+                        'enable_mtf': getattr(engine, 'enable_mtf', True),
+                        'enable_wh': getattr(engine, 'enable_wh', True)
+                    }
+                    
+                    # Store Dual-Bias Probs
+                    self.latest_data['mtf_probs'] = engine.last_probs['MTF']
+                    self.latest_data['wh_probs'] = engine.last_probs['WH']
+
                     if wh_signal:
                         self.latest_data['signal'] = f"WH: {wh_signal['direction']}"
                         self.latest_data['price'] = wh_signal.get('price', 0)
@@ -226,8 +242,27 @@ class TradingThread(threading.Thread):
                 self.add_log(f"⚠️ Loop Error: {e}")
             
             # Sleep logic
-            time.sleep(10) # 10s polling for dashboard
+            time.sleep(3) # 3s polling for heartbeat feel
             
+    def toggle_model(self, model_key, state):
+        """Toggle MTF or WH models"""
+        if model_key == 'MTF':
+            self.engine.paper_engine.enable_mtf = state
+            self.add_log(f"🔄 MTF Scalper set to {'ENABLED' if state else 'DISABLED'}")
+            return True
+        elif model_key == 'WH':
+            self.engine.paper_engine.enable_wh = state
+            self.add_log(f"🔄 Winner Hunter set to {'ENABLED' if state else 'DISABLED'}")
+            return True
+        return False
+
+    def switch_strategy(self, strategy_name):
+        """Switch strategy preset"""
+        success = self.engine.paper_engine.apply_strategy_preset(strategy_name)
+        if success:
+            self.add_log(f"🔄 Switched to Strategy: {strategy_name}")
+        return success
+
     def stop(self):
         self.running = False
         
