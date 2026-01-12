@@ -1,0 +1,31 @@
+# .env - Allow .env for Cloud Run deployment (secrets management via file)
+# .env
+*.pyc
+__pycache__/
+.git/
+.gitignore
+.gcloudignore
+Dockerfile
+README.md
+
+# Large Data Exclusions
+training/data/
+*.csv
+*.json
+!models/*.json
+!models/*_metadata.json
+logs/
+backtest_results/
+reports/
+
+# Python caching
+.pytest_cache/
+.mypy_cache/
+.venv/
+env/
+venv/
+.DS_Store
+
+# Exclude non-production scripts if any
+test_*.py
+verify_*.py
