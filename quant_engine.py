@@ -88,6 +88,18 @@ class ElasticThresholdManager:
             print(f"⚠️ Trade resulted in LOSS. Resetting {self.model_name} to SURGICAL mode.")
             self.mode = "SURGICAL"
 
+    def update_thresholds(self, surgical_long: float, surgical_short: float):
+        """Update base thresholds without resetting state"""
+        if self.surgical_threshold_long != surgical_long or self.surgical_threshold_short != surgical_short:
+            print(f"🔄 {self.model_name} Thresholds Updated: L {self.surgical_threshold_long:.2%}->{surgical_long:.2%}, S {self.surgical_threshold_short:.2%}->{surgical_short:.2%}")
+            self.surgical_threshold_long = surgical_long
+            self.surgical_threshold_short = surgical_short
+            
+            # If in surgical mode, update active immediately
+            if self.mode == "SURGICAL":
+                self.active_threshold_long = surgical_long
+                self.active_threshold_short = surgical_short
+
 class CircuitBreaker:
     """
     Protects capital by pausing trading after consecutive losses.
@@ -205,6 +217,13 @@ class TradingEngine:
                 
             print(f"   🎯 Winner Hunter thresholds: L:{self.winner_threshold_long:.2%}, S:{self.winner_threshold_short:.2%}")
             print(f"   🎯 MTF Scalper thresholds: L:{self.mtf_threshold_long:.2%}, S:{self.mtf_threshold_short:.2%}")
+            
+            # Update Elastic Managers if they exist
+            if hasattr(self, 'wh_elastic'):
+                self.wh_elastic.update_thresholds(self.winner_threshold_long, self.winner_threshold_short)
+            if hasattr(self, 'mtf_elastic'):
+                self.mtf_elastic.update_thresholds(self.mtf_threshold_long, self.mtf_threshold_short)
+                
         except Exception as e:
             print(f"   ⚠️ Could not load metadata thresholds: {e}, using defaults")
             # ULTIMATE OPTIMIZED Thresholds (Matches Jan 2-9 Simulation: 92% WR, 100 trades/day)
@@ -728,6 +747,9 @@ class TradingEngine:
                 iteration += 1
                 current_time = datetime.now().strftime("%H:%M:%S")
                 elapsed = (datetime.now() - start_time).seconds / 60
+                
+                # Check for threshold updates
+                self.load_thresholds()
                 
                 print(f"\n{'='*70}")
                 print(f"⏰ {current_time} | Check #{iteration} | Elapsed: {elapsed:.1f}m")

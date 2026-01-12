@@ -129,6 +129,10 @@ class LiveTradingEngine:
                 iteration += 1
                 current_time = datetime.now().strftime("%H:%M:%S")
                 
+                # Dynamic Threshold Reload
+                if hasattr(self.paper_engine, 'load_thresholds'):
+                    self.paper_engine.load_thresholds()
+                
                 print(f"\n{'='*70}")
                 print(f"⏰ {current_time} | Check #{iteration}")
                 print(f"{'='*70}")
