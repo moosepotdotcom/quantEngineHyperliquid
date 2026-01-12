@@ -10,6 +10,7 @@ This module:
 4. Runs paper trading in parallel
 """
 
+import os
 import sys
 import time
 from datetime import datetime
@@ -85,27 +86,15 @@ class LiveTradingEngine:
         
         # Execute in live trading (if enabled)
         if self.enable_live and self.live_trader:
-            # Get model-specific minimum threshold
-            model_name = signal.get('model', '')
+            # We trust the engine's internal thresholding now.
+            # If TradingEngine returned a signal, it passed metadata thresholds.
+            print(f"\n💰 Live Trading: Executing {signal.get('direction', 'LONG')} order...")
+            success = self.live_trader.execute_signal(signal)
             
-            if 'Winner Hunter' in model_name:
-                min_confidence = float(os.getenv('WINNER_HUNTER_MIN_CONFIDENCE', '0.2752'))
-            elif 'MTF Scalper' in model_name:
-                min_confidence = float(os.getenv('MTF_SCALPER_MIN_CONFIDENCE', '0.2013'))
+            if success:
+                print(f"✅ Live order executed!")
             else:
-                min_confidence = 0.30  # Fallback for unknown models
-            
-            if confidence >= min_confidence:
-                print(f"\n💰 Live Trading: Executing order...")
-                success = self.live_trader.execute_signal(signal)
-                
-                if success:
-                    print(f"✅ Live order executed!")
-                else:
-                    print(f"❌ Live order failed")
-            else:
-                print(f"\n⚠️  Confidence {confidence:.2%} below minimum {min_confidence:.0%}")
-                print(f"   Skipping live trade (paper trade only)")
+                print(f"❌ Live order failed")
     
     def check_positions(self, current_price: float):
         """
@@ -116,7 +105,10 @@ class LiveTradingEngine:
         """
         # Check paper trading positions
         if hasattr(self.paper_engine, 'exit_monitor'):
-            self.paper_engine.exit_monitor.check_exits()
+            closed_trades = self.paper_engine.exit_monitor.check_exits()
+            for trade in closed_trades:
+                print(f"📊 Paper trade closed: {trade['model']} {trade['outcome']}. Reporting to learning engine...")
+                self.paper_engine.report_outcome(trade['model'], trade['outcome'])
         
         # Check live trading positions
         if self.enable_live and self.live_trader:
@@ -144,12 +136,23 @@ class LiveTradingEngine:
                 # Check Winner Hunter
                 print("\n🏆 Checking Winner Hunter (1H)...")
                 wh_signal, wh_confidence = self.paper_engine.check_winner_hunter()
+                direction_wh = wh_signal.get('direction', 'None') if wh_signal else 'None'
+                print(f"   Conf: {wh_confidence:.2%} | Signal: {direction_wh}")
                 self.process_signal(wh_signal, wh_confidence, "Winner Hunter (1H)")
                 
                 # Check MTF Scalper
                 print("\n🎯 Checking MTF Scalper (5M)...")
                 mtf_signal, mtf_confidence = self.paper_engine.check_mtf_scalper()
+                direction_mtf = mtf_signal.get('direction', 'None') if mtf_signal else 'None'
+                print(f"   Conf: {mtf_confidence:.2%} | Signal: {direction_mtf}")
                 self.process_signal(mtf_signal, mtf_confidence, "MTF Scalper (5M)")
+                
+                # Check Gem Sniper (Added for Ultra-Precision)
+                print("\n💎 Checking Gem Sniper (5M)...")
+                gem_signal, gem_confidence = self.paper_engine.check_gem_sniper()
+                direction_gem = gem_signal.get('direction', 'None') if gem_signal else 'None'
+                print(f"   Conf: {gem_confidence:.2%} | Signal: {direction_gem}")
+                self.process_signal(gem_signal, gem_confidence, "Gem Sniper (ULTRA)")
                 
                 # Get current price for position checks
                 import requests

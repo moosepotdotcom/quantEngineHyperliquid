@@ -10,12 +10,24 @@ import pandas as pd
 import numpy as np
 import ta
 from ta.utils import dropna
+from advanced_features import add_advanced_features
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 
-def add_all_indicators(df):
-    """Add comprehensive technical indicators to a dataframe"""
-    # Don't drop NA rows at the start - we need all the data for calculations
+def add_all_indicators(df, use_advanced=True):
+    """
+    Add comprehensive list of technical indicators including advanced regime features.
+    """
+    df = df.copy()
+    
+    # --- 1. Advanced Regime Features (Hurst, Volatility, etc) ---
+    if use_advanced:
+        try:
+            df = add_advanced_features(df)
+        except Exception as e:
+            print(f"⚠️ Warning: Advanced features failed: {e}")
+        
+    # --- 2. Trend Indicators ---
     
     print(f"      🔧 add_all_indicators START: {len(df)} rows, {len(df.columns)} cols", flush=True)
     

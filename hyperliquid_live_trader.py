@@ -46,10 +46,14 @@ class HyperliquidTrader:
         
         self.info = Info(base_url=base_url)
         
+        # Small Account Settings ($60 Capitalization)
+        self.leverage = 15
+        self.target_tp_pct = 0.003 # Gem TP (0.3%)
+        self.target_sl_pct = 0.005 # Gem SL (0.5%)
+        self.max_position_size = float(os.getenv('MAX_POSITION_SIZE', '0.01'))  # Max BTC per trade
+        
         # Safety limits
-        self.max_position_size = float(os.getenv('MAX_POSITION_SIZE', '0.01'))
-        self.max_leverage = int(os.getenv('MAX_LEVERAGE', '2'))
-        self.daily_loss_limit = float(os.getenv('DAILY_LOSS_LIMIT', '5.0'))
+        self.daily_loss_limit = float(os.getenv('DAILY_LOSS_LIMIT', '10.0'))
         
         # Trading state
         self.daily_pnl = 0.0
@@ -69,6 +73,30 @@ class HyperliquidTrader:
             return False
         return True
     
+    def calculate_order_size(self, price: float) -> float:
+        """Calculate size for 15x leverage on current balance"""
+        info = self.get_account_info()
+        balance = info.get('balance', 0)
+        
+        if balance <= 0:
+            print("⚠️ Balance is zero, cannot calculate size")
+            return 0
+            
+        # Buying Power = Balance * Leverage
+        buying_power = balance * self.leverage
+        # BTC Size = Buying Power / Price
+        size = buying_power / price
+        
+        # Hyperliquid requires specific rounding for BTC (~4-5 decimals)
+        rounded_size = round(size, 4)
+        
+        print(f"💰 Compounding Logic:")
+        print(f"   Balance: ${balance:.2f} | Leverage: {self.leverage}x")
+        print(f"   Buying Power: ${buying_power:.2f}")
+        print(f"   Calculated Size: {rounded_size} BTC")
+        
+        return rounded_size
+
     def get_account_info(self) -> Dict:
         """Get account info using SDK"""
         try:
@@ -111,10 +139,24 @@ class HyperliquidTrader:
             print(f"✅ Order Result: {order_result}")
             
             if order_result and order_result.get('status') == 'ok':
+                # Check for nested error in response
+                resp_data = order_result.get('response', {})
+                if resp_data.get('type') == 'error':
+                    print(f"❌ Order rejected by exchange: {resp_data.get('msg')}")
+                    return None
+                
+                # Check statuses for nested errors (e.g., Insufficient Margin)
+                data = resp_data.get('data', {})
+                statuses = data.get('statuses', [])
+                for status in statuses:
+                    if isinstance(status, dict) and 'error' in status:
+                        print(f"❌ Exchange rejection found in status: {status['error']}")
+                        return None
+                        
                 print(f"✅ REAL Order Executed!")
                 return order_result
             else:
-                print(f"❌ Order failed: {order_result}")
+                print(f"❌ API Communication failed: {order_result}")
                 return None
                 
         except Exception as e:
@@ -123,54 +165,57 @@ class HyperliquidTrader:
             traceback.print_exc()
             return None
     
-    def place_tp_sl_orders(self, symbol: str, size: float, tp_price: float, sl_price: float):
+    def place_tp_sl_orders(self, symbol: str, size: float, tp_price: float, sl_price: float, is_long: bool = True):
         """
         Place TP and SL trigger orders on Hyperliquid
-        Uses proper Hyperliquid API format with string prices and grouping
+        CRITICAL: Both orders placed TOGETHER in single API call for proper linking
         """
+        print(f"\n🔧 DEBUG: place_tp_sl_orders() called with symbol={symbol}, size={size}, tp={tp_price}, sl={sl_price}, is_long={is_long}")
         print(f"\n📋 Placing TP/SL trigger orders on Hyperliquid...")
         
         # Round prices to INTEGERS (Hyperliquid requirement for SL orders)
         tp_price_rounded = round(tp_price, 0)  # Integer
         sl_price_rounded = round(sl_price, 0)  # Integer
         
+        # Exits are opposite of entry
+        exit_is_buy = not is_long
+        
         try:
-            # Place TP trigger order (take profit)
-            # Note: SDK requires 'name' not 'coin'
-            tp_order_request = {
-                "name": symbol,  # Changed from "coin" to "name"
-                "is_buy": False,
-                "sz": size,
-                "limit_px": tp_price_rounded,  # Float (integer value)
-                "order_type": {"trigger": {"triggerPx": tp_price_rounded, "isMarket": True, "tpsl": "tp"}},
-                "reduce_only": True
-            }
+            # CRITICAL FIX: Place BOTH TP and SL in SINGLE bulk_orders call
+            # This ensures proper order linking/grouping on Hyperliquid
+            orders = [
+                # Take Profit order
+                {
+                    "coin": symbol,
+                    "is_buy": exit_is_buy,
+                    "sz": size,
+                    "limit_px": tp_price_rounded,
+                    "order_type": {"trigger": {"triggerPx": tp_price_rounded, "isMarket": True, "tpsl": "tp"}},
+                    "reduce_only": True
+                },
+                # Stop Loss order
+                {
+                    "coin": symbol,
+                    "is_buy": exit_is_buy,
+                    "sz": size,
+                    "limit_px": sl_price_rounded,
+                    "order_type": {"trigger": {"triggerPx": sl_price_rounded, "isMarket": True, "tpsl": "sl"}},
+                    "reduce_only": True
+                }
+            ]
             
-            tp_order = self.exchange.bulk_orders([tp_order_request], grouping="positionTpsl")
+            # Place BOTH orders together with positionTpsl grouping
+            result = self.exchange.bulk_orders(orders, grouping="positionTpsl")
             
-            if tp_order and tp_order.get('status') == 'ok':
-                print(f"✅ TP trigger order placed at ${tp_price_rounded:,.0f}")
+            if result and result.get('status') == 'ok':
+                print(f"✅ TP/SL orders placed successfully!")
+                print(f"   TP: ${tp_price_rounded:,.0f}")
+                print(f"   SL: ${sl_price_rounded:,.0f}")
+                print(f"   Result: {result}")
+                return result, result  # Return same result for both (they're linked)
             else:
-                print(f"⚠️  TP order response: {tp_order}")
-            
-            # Place SL trigger order (stop loss)
-            sl_order_request = {
-                "name": symbol,  # Changed from "coin" to "name"
-                "is_buy": False,
-                "sz": size,
-                "limit_px": sl_price_rounded,  # Float (integer value)
-                "order_type": {"trigger": {"triggerPx": sl_price_rounded, "isMarket": True, "tpsl": "sl"}},
-                "reduce_only": True
-            }
-            
-            sl_order = self.exchange.bulk_orders([sl_order_request], grouping="positionTpsl")
-            
-            if sl_order and sl_order.get('status') == 'ok':
-                print(f"✅ SL trigger order placed at ${sl_price_rounded:,.0f}")
-            else:
-                print(f"⚠️  SL order response: {sl_order}")
-            
-            return tp_order, sl_order
+                print(f"⚠️  TP/SL order response: {result}")
+                return result, result
             
         except Exception as e:
             print(f"❌ Error placing TP/SL orders: {e}")
@@ -179,26 +224,44 @@ class HyperliquidTrader:
             return None, None
     
     def execute_signal(self, signal: Dict) -> bool:
-        """Execute trading signal with TP/SL orders"""
-        print(f"\n🎯 Executing REAL Signal (Official SDK):")
+        """Execute trading signal with Gem TP/SL targets (Bidirectional)"""
+        entry_price = float(signal.get('price'))
+        direction = signal.get('direction', 'LONG')
+        is_long = (direction == 'LONG')
+        
+        # Calculate dynamic size for compounding
+        size = self.calculate_order_size(entry_price)
+        if size <= 0: return False
+
+        print(f"\n🎯 Executing REAL Gem Signal:")
         print(f"   Model: {signal.get('model')}")
-        print(f"   Price: ${signal.get('price'):,.2f}")
+        print(f"   Direction: {direction}")
         print(f"   Confidence: {signal.get('confidence'):.2%}")
         
-        order = self.place_market_order('BTC', True, self.max_position_size)
+        # 1. Market Entry (is_buy=True for Long, is_buy=False for Short)
+        order = self.place_market_order('BTC', is_long, size)
         
         if order:
-            entry_price = signal.get('price')
-            tp_price = entry_price * 1.015
-            sl_price = entry_price * 0.992
+            # 2. Set Gem Targets (0.3% / 0.5%)
+            if is_long:
+                tp_price = entry_price * (1 + self.target_tp_pct)
+                sl_price = entry_price * (1 - self.target_sl_pct)
+            else:
+                tp_price = entry_price * (1 - self.target_tp_pct)
+                sl_price = entry_price * (1 + self.target_sl_pct)
             
-            # Place TP and SL orders on Hyperliquid
-            tp_order, sl_order = self.place_tp_sl_orders('BTC', self.max_position_size, tp_price, sl_price)
+            print(f"\n⏳ Waiting 2 seconds for position to settle...")
+            time.sleep(2)
             
+            # 3. Place TP/SL orders on Hyperliquid
+            tp_order, sl_order = self.place_tp_sl_orders('BTC', size, tp_price, sl_price, is_long=is_long)
+            
+            # 4. Add to active positions for redundant monitoring
             position_id = f"{signal.get('model')}_{int(time.time())}"
             self.active_positions[position_id] = {
                 'entry_price': entry_price,
-                'size': self.max_position_size,
+                'direction': direction,
+                'size': size,
                 'tp': tp_price,
                 'sl': sl_price,
                 'timestamp': datetime.now(),
@@ -207,13 +270,15 @@ class HyperliquidTrader:
                 'sl_order': sl_order
             }
             
-            print(f"✅ REAL Position Opened:")
+            print(f"✅ REAL Position Opened ({direction}):")
             print(f"   Entry: ${entry_price:,.2f}")
-            print(f"   TP: ${tp_price:,.2f} (+1.5%) - Order on exchange ✅")
-            print(f"   SL: ${sl_price:,.2f} (-0.8%) - Order on exchange ✅")
+            print(f"   TP: ${tp_price:,.2f} ({'+' if is_long else '-'}{self.target_tp_pct:.1%}) - Order on exchange ✅")
+            print(f"   SL: ${sl_price:,.2f} ({'-' if is_long else '+'}{self.target_sl_pct:.1%}) - Order on exchange ✅")
             
             return True
-        return False
+        else:
+            print(f"⚠️  Market order failed or was rejected. Skipping TP/SL placement to avoid stray orders.")
+            return False
     
     def check_positions(self, current_price: float):
         """Check and manage positions"""
@@ -246,12 +311,18 @@ class HyperliquidTrader:
         }
     
     def emergency_stop_all(self):
-        """Emergency stop"""
+        """Emergency stop: Close all active positions immediately"""
         print("\n🚨 EMERGENCY STOP!")
         self.emergency_stop = True
         for pos_id in list(self.active_positions.keys()):
             position = self.active_positions[pos_id]
-            self.place_market_order('BTC', False, position['size'])
+            direction = position.get('direction', 'LONG')
+            # To close a LONG, we SELL (is_buy=False)
+            # To close a SHORT, we BUY (is_buy=True)
+            close_is_buy = (direction == 'SHORT')
+            
+            print(f"🚨 Emergency closing {direction} position...")
+            self.place_market_order('BTC', close_is_buy, position['size'])
         self.active_positions = {}
 
 
