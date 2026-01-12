@@ -62,5 +62,15 @@ class LiquidationMonitor(threading.Thread):
                 # print(f"⚠️ Liq Monitor Error: {e}")
                 await asyncio.sleep(5) # Reconnect delay
 
+    def get_bias(self):
+        """Returns current bias from liquidations: 1 (Shorts Squeezed), -1 (Longs Cascaded), 0 (Neutral)"""
+        if not self.latest_liquidation:
+            return 0
+        
+        # Liquidations are fleeting, only consider last 2 minutes
+        if time.time() - self.latest_liquidation['time'] < 120:
+            return 1 if self.latest_liquidation['side'] == 'SHORT' else -1
+        return 0
+
     def stop(self):
         self.running = False

@@ -1,0 +1,53 @@
+{
+  "data_files": [
+    {
+      "name": "BTC Daily (1000 weeks)",
+      "file": "BTCUSD-1d-1000wks-data.csv",
+      "location": "datasets",
+      "symbol": "BTC",
+      "timeframe": "1d",
+      "description": "Bitcoin daily data - 1000 weeks of history"
+    },
+    {
+      "name": "BTC Hourly (500 weeks)",
+      "file": "BTCUSD-1h-500wks-data.csv",
+      "location": "datasets",
+      "symbol": "BTC",
+      "timeframe": "1h",
+      "description": "Bitcoin hourly data - 500 weeks of history"
+    },
+    {
+      "name": "BTC 6-Hour (500 weeks)",
+      "file": "BTCUSD-6h-500wks-data.csv",
+      "location": "datasets",
+      "symbol": "BTC",
+      "timeframe": "6h",
+      "description": "Bitcoin 6-hour data - 500 weeks of history"
+    },
+    {
+      "name": "BTC 15m (2022)",
+      "file": "BTC-USD-15m-2022-1-01.csv",
+      "location": "Open-AI-Assistants for Bootcamp Members Only",
+      "symbol": "BTC",
+      "timeframe": "15m",
+      "description": "Bitcoin 15-minute data from 2022"
+    },
+    {
+      "name": "BTC 15m (2023)",
+      "file": "BTC-USD-15m-2023-1-01T00_00 (1).csv",
+      "location": "Open-AI-Assistants for Bootcamp Members Only",
+      "symbol": "BTC",
+      "timeframe": "15m",
+      "description": "Bitcoin 15-minute data from 2023"
+    },
+    {
+      "name": "ETH 15m (2021)",
+      "file": "ETH-USD-15m-2021-1-01T00_00.csv",
+      "location": "Open-AI-Assistants for Bootcamp Members Only",
+      "symbol": "ETH",
+      "timeframe": "15m",
+      "description": "Ethereum 15-minute data from 2021"
+    }
+  ]
+}
+

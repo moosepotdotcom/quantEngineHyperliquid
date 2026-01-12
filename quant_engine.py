@@ -30,6 +30,14 @@ from utils.trend_filter import get_market_regime, should_trade, get_regime_info
 from monitoring.performance_tracker import get_tracker
 from monitoring.trade_exit_monitor import get_monitor
 
+# --- Modular Strategy Imports ---
+from strategies.mandalorian_mtf.logic import check_mtf_scalper
+from strategies.winner_hunter.logic import check_winner_hunter
+from strategies.specialized_agents.ml_scalper_v2 import MLScalperV2 as MLScalperV2Agent
+from strategies.specialized_agents.whale_agent import WhaleWatcher
+from strategies.specialized_agents.liquidation_agent import LiquidationMonitor
+from strategies.specialized_agents.funding_agent import FundingMonitor
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'utils'))
 
@@ -183,6 +191,22 @@ STRATEGY_PRESETS = {
         "use_hurst": True,
         "use_atr_penalty": True,
         "use_circuit_breaker": True
+    },
+    "Fleet Consensus": {
+        "description": "Consensus from Whale, Liquidation, and Funding agents.",
+        "threshold": 0.45,
+        "use_hurst": True,
+        "use_atr_penalty": True,
+        "use_circuit_breaker": True,
+        "use_fleet": True
+    },
+    "V2 Enhanced": {
+        "description": "Next-gen ML Scalper (XGB+LGB) with Regime Detection.",
+        "threshold": 0.50,
+        "use_hurst": True,
+        "use_atr_penalty": True,
+        "use_circuit_breaker": True,
+        "use_v2": True
     }
 }
 
@@ -230,7 +254,25 @@ class TradingEngine:
         self.enable_mtf = True
         self.enable_wh = True
         
-        # Initialize logging and tracking
+        # Core Strategy Logic
+        self.mtf_strat = check_mtf_scalper
+        self.wh_strat = check_winner_hunter
+        
+        # Specialized Specialized Agents (MandalorianNBox Fleet)
+        print("🤖 Initializing Specialized Agents...")
+        self.v2_scalper = MLScalperV2Agent()
+        self.whale_watcher = WhaleWatcher()
+        self.liq_monitor = LiquidationMonitor()
+        self.funding_monitor = FundingMonitor()
+        
+        # Start Background Agents
+        try:
+            self.whale_watcher.start()
+            self.liq_monitor.start()
+            self.funding_monitor.start()
+            print("📡 Specialized Agents ONLINE")
+        except:
+            print("⚠️ Background Agents failed to start (likely threading conflict)")
         self.logger = get_logger()
         self.tracker = get_tracker()
         self.exit_monitor = get_monitor(self.logger)
@@ -255,6 +297,9 @@ class TradingEngine:
         self.use_hurst = preset["use_hurst"]
         self.use_atr_penalty = preset["use_atr_penalty"]
         self.use_circuit_breaker = preset["use_circuit_breaker"]
+        self.use_fleet = preset.get("use_fleet", False)
+        self.use_v2 = preset.get("use_v2", False)
+        self.threshold = preset.get("threshold", 0.45) # Base threshold for V2 or fallback
         
         # Update Thresholds
         self.mtf_threshold_long = preset["threshold"]
@@ -577,6 +622,32 @@ class TradingEngine:
     
     def check_mtf_scalper(self):
         """Check MTF Scalper for signals (Multi-Timeframe)"""
+        # --- V2 ENHANCED REDIRECT ---
+        if hasattr(self, 'use_v2') and self.use_v2:
+            df_5m = self.fetch_data('5m', 500)
+            df_15m = self.fetch_data('15m', 500)
+            df_1h = self.fetch_data('1h', 500)
+            if df_5m is not None and df_15m is not None and df_1h is not None:
+                # Update V2 with current biases
+                self.v2_scalper.whale_bias = self.whale_watcher.get_bias() if hasattr(self.whale_watcher, 'get_bias') else 0
+                self.v2_scalper.update_funding_bias(self.funding_monitor.get_current_rate() if hasattr(self.funding_monitor, 'get_current_rate') else 0)
+                
+                signal_str = self.v2_scalper.check_signal(df_5m, df_15m, df_1h)
+                if signal_str and signal_str != 'NEUTRAL':
+                    # Convert to standard signal dict
+                    price = float(df_5m['close'].iloc[-1])
+                    return {
+                        'model': 'MLScalper V2 (Enhanced)',
+                        'timestamp': datetime.now(),
+                        'price': price,
+                        'direction': signal_str,
+                        'confidence': max(self.v2_scalper.ensemble_predict(None)) if hasattr(self.v2_scalper, 'ensemble_predict') else 0.5,
+                        'rsi': 50, # Placeholder or actual if available
+                        'macd': 0,
+                        'atr_pct': 0
+                    }, 0.5
+            return None, 0.0
+
         # Fetch 5m base
         df_5m = self.fetch_data('5m', 500)
         if df_5m is None or len(df_5m) == 0:
@@ -643,6 +714,30 @@ class TradingEngine:
         prob_long = float(probas[1])
         prob_short = float(probas[2])
         
+        # --- FLEET CONSENSUS BIAS ---
+        if self.use_fleet:
+            # Pull bias from specialized agents
+            whale_bias = self.whale_watcher.get_bias() if hasattr(self.whale_watcher, 'get_bias') else 0
+            liq_bias = self.liq_monitor.get_bias() if hasattr(self.liq_monitor, 'get_bias') else 0
+            funding_bias = self.funding_monitor.get_bias() if hasattr(self.funding_monitor, 'get_bias') else 0
+            
+            # Apply multipliers (Aggregated Bias)
+            # 1 = Bullish, -1 = Bearish, 0 = Neutral
+            total_bias = whale_bias + liq_bias + funding_bias
+            
+            if total_bias > 0:
+                prob_long *= (1 + (0.05 * total_bias)) # Up to 15% boost
+                prob_short *= (1 - (0.05 * total_bias)) # Up to 15% penalty
+            elif total_bias < 0:
+                prob_short *= (1 + (0.05 * abs(total_bias)))
+                prob_long *= (1 - (0.05 * abs(total_bias)))
+            
+            # Cap at 1.0
+            prob_long = min(prob_long, 1.0)
+            prob_short = min(prob_short, 1.0)
+            
+            print(f"   🤖 FLEET BIAS: {total_bias:+d} (W:{whale_bias}, L:{liq_bias}, F:{funding_bias}) -> Adjusted P(L):{prob_long:.3f}")
+
         # Update Dual-Bias UI Storage
         self.last_probs['MTF'] = {'long': prob_long, 'short': prob_short}
         

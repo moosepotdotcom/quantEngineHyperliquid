@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Dashboard - MandalorianN</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow-x: hidden;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header {
+            background: #161b22; padding: 15px 20px; border-radius: 8px;
+            margin-bottom: 20px; border: 1px solid #30363d;
+        }
+        .header h1 { color: #58a6ff; font-size: 24px; }
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            border-bottom: 2px solid #30363d;
+        }
+        .tab {
+            padding: 12px 24px; cursor: pointer; background: transparent;
+            border: none; color: #8b949e; font-size: 16px;
+            border-bottom: 2px solid transparent; margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #58a6ff; border-bottom-color: #58a6ff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .panel {
+            background: #161b22; border: 1px solid #30363d;
+            border-radius: 8px; padding: 20px; margin-bottom: 20px;
+        }
+        .panel h3 { color: #58a6ff; margin-bottom: 15px; }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-primary { background: #238636; color: white; }
+        .btn-primary:hover { background: #2ea043; }
+        .btn-danger { background: #da3633; color: white; }
+        .btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: #c9d1d9; margin-bottom: 5px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 8px; background: #0d1117;
+            border: 1px solid #30363d; border-radius: 4px; color: #c9d1d9;
+        }
+        .results-table {
+            width: 100%; border-collapse: collapse; margin-top: 15px;
+        }
+        .results-table th, .results-table td {
+            padding: 10px; text-align: left; border-bottom: 1px solid #30363d;
+        }
+        .results-table th { color: #58a6ff; }
+        .positive { color: #238636; }
+        .negative { color: #da3633; }
+        .status-badge {
+            display: inline-block; padding: 4px 8px; border-radius: 4px;
+            font-size: 12px; font-weight: 600;
+        }
+        .status-active { background: #238636; color: white; }
+        .status-stopped { background: #8b949e; color: white; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .trading-log {
+            height: 300px; overflow-y: auto; background: #0d1117;
+            padding: 15px; border-radius: 6px; font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry { margin-bottom: 5px; padding: 4px; border-radius: 3px; }
+        .log-entry.BUY { background: rgba(56, 139, 253, 0.1); color: #58a6ff; }
+        .log-entry.SELL { background: rgba(248, 81, 73, 0.1); color: #f85149; }
+        .log-entry.INFO { color: #8b949e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌙 MandalorianN Trading Bot Dashboard</h1>
+            <p style="color: #8b949e; margin-top: 5px;">Strategy Testing • Backtesting • Live Monitoring</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('strategies')">📊 Strategies</button>
+            <button class="tab" onclick="showTab('backtest')">🧪 Backtest</button>
+            <button class="tab" onclick="showTab('deployed')">🚀 Deployed</button>
+            <button class="tab" onclick="showTab('monitoring')">👁️ Monitoring</button>
+        </div>
+
+        <!-- Strategies Tab -->
+        <div id="strategies" class="tab-content active">
+            <div class="panel">
+                <h3>Available Strategies</h3>
+                <div id="strategiesList"></div>
+            </div>
+        </div>
+
+        <!-- Backtest Tab -->
+        <div id="backtest" class="tab-content">
+            <div class="grid-2">
+                <div class="panel">
+                    <h3>Run Backtest</h3>
+                    <form id="backtestForm">
+                        <div class="form-group">
+                            <label>Strategy</label>
+                            <select id="backtestStrategy" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data File (BTC & ETH)</label>
+                            <select id="backtestData" required>
+                                <option value="">Loading data files...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" id="startDate" value="2020-01-01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="endDate" value="2024-12-31" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Capital</label>
+                            <input type="number" id="initialCash" value="10000" required>
+                        </div>
+                        <div id="strategyParams"></div>
+                        <button type="submit" class="btn btn-primary">Run Backtest</button>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h3>Backtest Results</h3>
+                    <div id="backtestResults"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployed Strategies Tab -->
+        <div id="deployed" class="tab-content">
+            <div class="panel">
+                <h3>Deployed Strategies</h3>
+                <div id="deployedStrategies"></div>
+            </div>
+        </div>
+
+        <!-- Monitoring Tab -->
+        <div id="monitoring" class="tab-content">
+            <div class="grid-2">
+                <div class="panel">
+                    <h3>Live Trading Log</h3>
+                    <div id="tradingLog" class="trading-log"></div>
+                </div>
+                <div class="panel">
+                    <h3>Positions & Prices</h3>
+                    <div id="positionsData"></div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Liquidations</h3>
+                <div id="liquidationsData"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let strategies = {};
+        let backtestResults = [];
+        let deployedStrategies = {};
+
+        // Load strategies and data files on page load
+        Promise.all([
+            fetch('/api/strategies').then(r => r.json()),
+            fetch('/api/data-files').then(r => r.json())
+        ]).then(([strategiesData, dataFilesData]) => {
+            strategies = strategiesData;
+            renderStrategies();
+            populateBacktestForm();
+            populateDataFiles(dataFilesData.data_files || []);
+        });
+
+        function populateDataFiles(dataFiles) {
+            const select = document.getElementById('backtestData');
+            select.innerHTML = dataFiles.map(file => 
+                `<option value="${file.file}">${file.name} (${file.symbol} ${file.timeframe})</option>`
+            ).join('');
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function renderStrategies() {
+            const list = document.getElementById('strategiesList');
+            list.innerHTML = Object.keys(strategies).map(name => `
+                <div class="panel" style="margin-bottom: 10px;">
+                    <h4>${name}</h4>
+                    <p style="color: #8b949e;">${strategies[name].description}</p>
+                </div>
+            `).join('');
+        }
+
+        function populateBacktestForm() {
+            const select = document.getElementById('backtestStrategy');
+            select.innerHTML = Object.keys(strategies).map(name => 
+                `<option value="${name}">${name}</option>`
+            ).join('');
+            updateStrategyParams();
+        }
+
+        function updateStrategyParams() {
+            const strategyName = document.getElementById('backtestStrategy').value;
+            const paramsDiv = document.getElementById('strategyParams');
+            const params = strategies[strategyName]?.params || {};
+            
+            paramsDiv.innerHTML = Object.keys(params).map(key => {
+                const param = params[key];
+                return `
+                    <div class="form-group">
+                        <label>${key.replace('_', ' ').toUpperCase()}</label>
+                        <input type="${param.type === 'int' ? 'number' : 'number'}" 
+                               id="param_${key}" value="${param.default}" 
+                               min="${param.min}" max="${param.max}" step="${param.type === 'float' ? '0.1' : '1'}" required>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('backtestStrategy').addEventListener('change', updateStrategyParams);
+        
+        document.getElementById('backtestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const strategyName = document.getElementById('backtestStrategy').value;
+            const params = {};
+            Object.keys(strategies[strategyName].params).forEach(key => {
+                params[key] = parseFloat(document.getElementById(`param_${key}`).value);
+            });
+
+            const data = {
+                strategy_name: strategyName,
+                params: params,
+                data_file: document.getElementById('backtestData').value,
+                start_date: document.getElementById('startDate').value,
+                end_date: document.getElementById('endDate').value,
+                initial_cash: parseFloat(document.getElementById('initialCash').value),
+                commission: 0.001
+            };
+
+            const result = await fetch('/api/backtest', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json());
+
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                backtestResults.unshift(result);
+                renderBacktestResults();
+                alert('Backtest complete! Check results.');
+            }
+        });
+
+        function renderBacktestResults() {
+            const div = document.getElementById('backtestResults');
+            if (backtestResults.length === 0) {
+                div.innerHTML = '<p style="color: #8b949e;">No backtest results yet</p>';
+                return;
+            }
+            div.innerHTML = `
+                <table class="results-table">
+                    <tr>
+                        <th>Strategy</th><th>Profit %</th><th>Sharpe</th><th>Win Rate</th><th>Actions</th>
+                    </tr>
+                    ${backtestResults.slice(0, 10).map(r => `
+                        <tr>
+                            <td>${r.strategy}</td>
+                            <td class="${r.profit_pct >= 0 ? 'positive' : 'negative'}">${r.profit_pct.toFixed(2)}%</td>
+                            <td>${r.sharpe_ratio?.toFixed(2) || 'N/A'}</td>
+                            <td>${r.win_rate?.toFixed(1) || 0}%</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="deployStrategy(${backtestResults.indexOf(r)})">
+                                    Deploy
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+
+        function deployStrategy(index) {
+            const result = backtestResults[index];
+            const strategyId = 'strategy_' + Date.now();
+            
+            fetch('/api/deploy-strategy', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    strategy_id: strategyId,
+                    strategy_name: result.strategy,
+                    params: result.params,
+                    symbol: 'BTC',
+                    size: 1
+                })
+            }).then(r => r.json()).then(data => {
+                alert('Strategy deployed!');
+                loadDeployedStrategies();
+            });
+        }
+
+        function loadDeployedStrategies() {
+            fetch('/api/deployed-strategies')
+                .then(r => r.json())
+                .then(data => {
+                    deployedStrategies = data.strategies;
+                    renderDeployedStrategies(data);
+                });
+        }
+
+        function renderDeployedStrategies(data) {
+            const div = document.getElementById('deployedStrategies');
+            const strategies = Object.values(data.strategies);
+            if (strategies.length === 0) {
+                div.innerHTML = '<p style="color: #8b949e;">No deployed strategies</p>';
+                return;
+            }
+            div.innerHTML = strategies.map(s => `
+                <div class="panel" style="margin-bottom: 10px;">
+                    <h4>${s.strategy_name} 
+                        <span class="status-badge status-${s.status}">${s.status}</span>
+                    </h4>
+                    <p>Symbol: ${s.symbol} | Size: ${s.size}</p>
+                    <button class="btn btn-danger" onclick="stopStrategy('${s.id}')">Stop</button>
+                </div>
+            `).join('');
+        }
+
+        function stopStrategy(id) {
+            fetch('/api/stop-strategy', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({strategy_id: id})
+            }).then(() => loadDeployedStrategies());
+        }
+
+        // Socket events
+        socket.on('new_log_entry', (entry) => {
+            const log = document.getElementById('tradingLog');
+            const div = document.createElement('div');
+            div.className = `log-entry ${entry.type}`;
+            div.textContent = `[${entry.timestamp}] ${entry.type} ${entry.symbol || ''} ${entry.message || ''}`;
+            log.insertBefore(div, log.firstChild);
+            if (log.children.length > 100) log.removeChild(log.lastChild);
+        });
+
+        socket.on('backtest_complete', (result) => {
+            backtestResults.unshift(result);
+            renderBacktestResults();
+        });
+
+        socket.on('strategy_deployed', () => loadDeployedStrategies());
+
+        // Load initial data
+        loadDeployedStrategies();
+        fetch('/api/backtest-results').then(r => r.json()).then(data => {
+            backtestResults = data;
+            renderBacktestResults();
+        });
+    </script>
+</body>
+</html>
+

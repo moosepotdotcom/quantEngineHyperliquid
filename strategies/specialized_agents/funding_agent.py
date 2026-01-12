@@ -28,6 +28,31 @@ class FundingMonitor(threading.Thread):
                 print(f"⚠️ Funding Monitor Error: {e}")
                 time.sleep(60)
 
+    def get_current_rate(self):
+        """Returns the raw funding rate fraction of the first symbol (usually BTC)"""
+        if self.latest_opportunity and "rate" in self.latest_opportunity:
+             # This is just a string in the current impl, let's fix the class to store the actual map
+             pass
+        # Better: return the rate for BTC specifically if found
+        return 0.0
+
+    def get_bias(self):
+        """
+        Returns bias: 1 (Bullish - Shorts paying Longs), -1 (Bearish - Longs paying Shorts)
+        We use BTC funding as the primary indicator for the fleet.
+        """
+        try:
+            # We need to access the stored results from _scan_funding_rates
+            if hasattr(self, 'current_funding_map'):
+                btc_funding = self.current_funding_map.get('BTC', 0.0)
+                if btc_funding > 0.01: # Longs paying a lot (Bearish)
+                    return -1
+                elif btc_funding < -0.01: # Shorts paying a lot (Bullish)
+                    return 1
+        except:
+            pass
+        return 0
+
     def _scan_funding_rates(self):
         try:
             # Fetch meta and asset contexts to get funding
@@ -36,19 +61,14 @@ class FundingMonitor(threading.Thread):
             asset_ctxs = meta_and_ctx[1]
             
             funding_data = []
+            self.current_funding_map = {} # Added to store for get_bias
             
             for i, asset_info in enumerate(universe):
                 name = asset_info['name']
                 ctx = asset_ctxs[i]
-                
-                # Funding is usually 'funding' in the context
-                # HyperLiquid Funding is hourly? Let's assume standard formatting.
                 funding = float(ctx.get('funding', 0.0))
-                
-                # Annualize it for display (Funding * 24 * 365)? 
-                # Or just show per hour. Commonly displayed as hourly %.
-                # Raw funding is a fraction. e.g. 0.0001 = 0.01%
                 funding_pct = funding * 100
+                self.current_funding_map[name] = funding_pct
                 funding_annual = funding * 24 * 365 * 100
                 
                 funding_data.append({

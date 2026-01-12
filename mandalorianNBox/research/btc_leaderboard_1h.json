@@ -1,0 +1,356 @@
+[
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 10,
+            "rsi_oversold": 30,
+            "rsi_overbought": 70
+        },
+        "net_profit": 173898.09999999945,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 10,
+            "rsi_oversold": 30,
+            "rsi_overbought": 75
+        },
+        "net_profit": 98321.24999999988,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 10,
+            "rsi_oversold": 35,
+            "rsi_overbought": 65
+        },
+        "net_profit": 203928.04999999772,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 10,
+            "rsi_oversold": 35,
+            "rsi_overbought": 70
+        },
+        "net_profit": 158098.55999999976,
+        "sharpe": 0.0,
+        "trades": 11
+    },
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 10,
+            "rsi_oversold": 35,
+            "rsi_overbought": 75
+        },
+        "net_profit": 79734.7099999999,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "RSIStrategy",
+        "params": {
+            "rsi_period": 14,
+            "rsi_oversold": 35,
+            "rsi_overbought": 70
+        },
+        "net_profit": 123523.77999999985,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 14,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 5501.409999999974,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 14,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3360.2299999999814,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 14,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 2635.4899999999907,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 30,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 5462.849999999977,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 30,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3396.839999999982,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 40,
+            "atr_period": 30,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 1800.8699999999808,
+        "sharpe": 0.0,
+        "trades": 13
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 14,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 5307.1099999999715,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 14,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 4229.819999999978,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 14,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 5216.369999999981,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 30,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 5307.1099999999715,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 30,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 4266.4299999999785,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 60,
+            "atr_period": 30,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3886.3599999999715,
+        "sharpe": 0.0,
+        "trades": 9
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 14,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 2736.689999999988,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 14,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 1659.3999999999942,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 14,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 2645.949999999997,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 30,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 2736.689999999988,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 30,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 1696.0099999999948,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 80,
+            "atr_period": 30,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 1315.9399999999878,
+        "sharpe": 0.0,
+        "trades": 7
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 14,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3707.949999999997,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 14,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3459.3899999999994,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 14,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 2645.949999999997,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 30,
+            "atr_multiplier": 2.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3707.949999999997,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 30,
+            "atr_multiplier": 3.0,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3496.0,
+        "sharpe": 0.0,
+        "trades": 6
+    },
+    {
+        "strategy": "TurtleStrategyOptimized",
+        "params": {
+            "lookback": 100,
+            "atr_period": 30,
+            "atr_multiplier": 3.7,
+            "take_profit_pct": 0.8997
+        },
+        "net_profit": 3115.929999999993,
+        "sharpe": 0.0,
+        "trades": 6
+    }
+]

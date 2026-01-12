@@ -1,0 +1,50 @@
+# ATC Bootcamp - Git Ignore File
+# Prevents sensitive files from being committed
+
+# API Keys and Private Keys
+dontshare.py
+dontshare_config.py
+dontshareconfig.py
+key_file.py
+*.key
+*.secret
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+algotrader/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (optional - uncomment if you don't want to track data)
+# *.csv
+# datasets/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.local
+
+
+

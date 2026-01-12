@@ -433,6 +433,37 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- FLEET CONSENSUS BIAS INDICATORS -->
+                <div
+                    style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:15px; display:flex; justify-content:space-around; align-items:center;">
+                    <div style="text-align:center;">
+                        <div style="font-size:0.65em; color:var(--text-secondary); margin-bottom:5px;">WHALE BIAS</div>
+                        <div id="bias-whale"
+                            style="font-family:'Orbitron'; font-size:0.9em; padding:4px 10px; border-radius:4px; background:rgba(255,255,255,0.05);">
+                            NEUTRAL</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.65em; color:var(--text-secondary); margin-bottom:5px;">LIQ AUTO-BIAS
+                        </div>
+                        <div id="bias-liq"
+                            style="font-family:'Orbitron'; font-size:0.9em; padding:4px 10px; border-radius:4px; background:rgba(255,255,255,0.05);">
+                            NEUTRAL</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.65em; color:var(--text-secondary); margin-bottom:5px;">FUNDING BIAS
+                        </div>
+                        <div id="bias-funding"
+                            style="font-family:'Orbitron'; font-size:0.9em; padding:4px 10px; border-radius:4px; background:rgba(255,255,255,0.05);">
+                            NEUTRAL</div>
+                    </div>
+                    <div style="text-align:center; padding-left:15px; border-left:1px solid #333;">
+                        <div style="font-size:0.65em; font-weight:bold; color:#fff; margin-bottom:5px;">FLEET POWER
+                        </div>
+                        <div id="bias-total" style="font-family:'Orbitron'; font-size:1.1em; color:var(--neon-green);">
+                            +0</div>
+                    </div>
+                </div>
             </div>
 
             <!-- WHALE RADAR -->
@@ -518,6 +549,8 @@
                         <option value="Full Shields">Full Shields (Max Safety)</option>
                         <option value="Hyper Aggressive">Hyper Aggressive (High Volume)</option>
                         <option value="Surgical Sniper">Surgical Sniper (Ultra Precise)</option>
+                        <option value="Fleet Consensus">Fleet Consensus (Multi-Agent)</option>
+                        <option value="V2 Enhanced">V2 Enhanced (Next-Gen AI)</option>
                     </select>
                     <div id="strategy-desc" style="font-size:0.75em; color:var(--neon-green); margin-top:5px;">Standard
                         verified setup.</div>
@@ -663,7 +696,9 @@
                         "Benchmark Mode": "Standard verified setup (87.1% WR). Balanced volume.",
                         "Full Shields": "Maximum safety. Hurst Filter + ATR Penalty enabled.",
                         "Hyper Aggressive": "High trade volume. Lower threshold, no shields.",
-                        "Surgical Sniper": "Ultra precise. High 0.50 threshold + ATR Penalty."
+                        "Surgical Sniper": "Ultra precise. High 0.50 threshold + ATR Penalty.",
+                        "Fleet Consensus": "Multi-agent swarm. Whale Walls + Liquidations + Funding.",
+                        "V2 Enhanced": "Advanced XGB+LGB Ensemble with Regime Filtering."
                     };
                     document.getElementById('strategy-desc').innerText = descMap[name] || "";
 
@@ -916,7 +951,29 @@
                             let shieldsHTML = "";
                             if (strat.use_hurst) shieldsHTML += '<span style="background:var(--neon-green); color:black; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">HURST SHIELD</span>';
                             if (strat.use_atr_penalty) shieldsHTML += '<span style="background:var(--neon-red); color:white; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">ATR SHIELD</span>';
+                            if (strat.use_fleet) shieldsHTML += '<span style="background:#58a6ff; color:black; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">FLEET ACTIVE</span>';
+                            if (strat.use_v2) shieldsHTML += '<span style="background:#FFD700; color:black; padding:2px 6px; border-radius:4px; font-size:0.6em; font-weight:bold; animation: pulse 2s infinite;">V2 ENGINE</span>';
                             shieldContainer.innerHTML = shieldsHTML;
+                        }
+
+                        // Update Fleet Biases
+                        const fb = d.fleet_bias || { whale: 0, liq: 0, funding: 0, total: 0 };
+                        const updateBiasEl = (id, val, labels) => {
+                            const el = document.getElementById(id);
+                            if (!el) return;
+                            el.innerText = val > 0 ? labels.pos : (val < 0 ? labels.neg : 'NEUTRAL');
+                            el.style.color = val > 0 ? 'var(--neon-green)' : (val < 0 ? 'var(--neon-red)' : '#ccc');
+                            el.style.background = val !== 0 ? (val > 0 ? 'rgba(0,255,65,0.1)' : 'rgba(255,51,51,0.1)') : 'rgba(255,255,255,0.05)';
+                        };
+
+                        updateBiasEl('bias-whale', fb.whale, { pos: '🐋 BULLISH', neg: '🐋 BEARISH' });
+                        updateBiasEl('bias-liq', fb.liq, { pos: '🌊 SQZ ALERT', neg: '🌊 LIQ CASC' });
+                        updateBiasEl('bias-funding', fb.funding, { pos: '💰 BULL RATE', neg: '💰 BEAR RATE' });
+
+                        const totalEl = document.getElementById('bias-total');
+                        if (totalEl) {
+                            totalEl.innerText = (fb.total > 0 ? '+' : '') + fb.total;
+                            totalEl.style.color = fb.total > 0 ? 'var(--neon-green)' : (fb.total < 0 ? 'var(--neon-red)' : '#ccc');
                         }
 
                         // Sync Toggles

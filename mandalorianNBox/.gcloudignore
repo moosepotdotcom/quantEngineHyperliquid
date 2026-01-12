@@ -1,0 +1,28 @@
+# Ignore common development files
+.gcloudignore
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.DS_Store
+*.log
+
+# Keep models directory!
+# !models/
+
+# Ignore large/unnecessary files
+optimization_results.csv
+*.jpg
+*.png
+
+# Exclude large development folders
+external_repos/
+archive/
+datasets/
+docs/

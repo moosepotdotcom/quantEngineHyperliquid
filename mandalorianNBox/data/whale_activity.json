@@ -1,0 +1,11 @@
+[
+    {
+        "timestamp": 1735261000,
+        "name": "Simulated Whale",
+        "coin": "BTC",
+        "action": "ACCUMULATING",
+        "change": 0.5,
+        "size": 1.5,
+        "price": 95000.0
+    }
+]

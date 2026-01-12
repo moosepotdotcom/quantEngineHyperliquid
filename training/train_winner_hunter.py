@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 """
-Train Winner Hunter (1H) model with proper validation and calibration
+Train Winner Hunter (1H) model with "The Trio" (XGBoost, LightGBM, CatBoost)
+Focusing on maximum precision (Targeting 100% Win Rate)
 """
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+import lightgbm as lgb
+from catboost import CatBoostClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import classification_report, roc_auc_score, precision_recall_curve
 import matplotlib.pyplot as plt
 import json
+import pickle
+import os
 
 def main():
     print("="*70)
-    print("🏆 WINNER HUNTER (1H) MODEL TRAINING")
+    print("🏆 WINNER HUNTER (1H) - THE TRIO TRAINING")
     print("="*70)
+    
+    # Create models directory (root level)
+    os.makedirs('models', exist_ok=True)
     
     # Load labeled data
     print("\n📊 Loading labeled data...")
@@ -36,7 +44,13 @@ def main():
     
     print(f"   Features: {len(feature_cols)}")
     print(f"   Samples: {len(X):,}")
-    print(f"   Positive samples: {np.sum(y):,} ({np.sum(y)/len(y)*100:.2f}%)")
+    
+    # Class distribution
+    unique, counts = np.unique(y, return_counts=True)
+    print(f"   Class Distribution:")
+    for cls, cnt in zip(unique, counts):
+        cls_name = ['Neutral', 'Long', 'Short'][int(cls)]
+        print(f"      {cls_name} ({cls}): {cnt:,} ({cnt/len(y)*100:.2f}%)")
     
     # Split data (chronological)
     print("\n📊 Splitting data (chronological)...")
@@ -52,133 +66,145 @@ def main():
     X_test = X[train_size+val_size:]
     y_test = y[train_size+val_size:]
     
-    print(f"   Train: {len(X_train):,} samples ({np.sum(y_train)/len(y_train)*100:.2f}% positive)")
-    print(f"   Val:   {len(X_val):,} samples ({np.sum(y_val)/len(y_val)*100:.2f}% positive)")
-    print(f"   Test:  {len(X_test):,} samples ({np.sum(y_test)/len(y_test)*100:.2f}% positive)")
+    print(f"   Train: {len(X_train):,} samples")
+    print(f"   Val:   {len(X_val):,} samples")
+    print(f"   Test:  {len(X_test):,} samples")
     
-    # Train XGBoost model
-    print("\n🤖 Training XGBoost model...")
+    # --- 1. XGBoost ---
+    print("\n🤖 Training 1/3: XGBoost...")
+    from sklearn.utils.class_weight import compute_class_weight
     
-    # Calculate scale_pos_weight for class imbalance
-    scale_pos_weight = len(y_train[y_train == 0]) / len(y_train[y_train == 1])
-    print(f"   Scale pos weight: {scale_pos_weight:.2f}")
+    # Compute class weights for imbalanced data
+    class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+    sample_weights = np.array([class_weights[int(label)] for label in y_train])
     
-    model = xgb.XGBClassifier(
-        n_estimators=200,
-        max_depth=6,
-        learning_rate=0.1,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        scale_pos_weight=scale_pos_weight,
+    xgb_model = xgb.XGBClassifier(
+        n_estimators=600,
+        max_depth=7,
+        learning_rate=0.03,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        objective='multi:softprob',
+        num_class=3,
         random_state=42,
         n_jobs=-1,
-        early_stopping_rounds=20
+        early_stopping_rounds=50
+    )
+    xgb_model.fit(X_train, y_train, sample_weight=sample_weights, eval_set=[(X_val, y_val)], verbose=False)
+    
+    # --- 2. LightGBM ---
+    print("🤖 Training 2/3: LightGBM...")
+    lgb_model = lgb.LGBMClassifier(
+        n_estimators=1000,
+        max_depth=7,
+        learning_rate=0.02,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        objective='multiclass',
+        num_class=3,
+        random_state=42,
+        n_jobs=-1,
+        importance_type='gain',
+        class_weight='balanced'
+    )
+    # Using feature names to avoid warnings
+    lgb_model.fit(
+        X_train, y_train, 
+        eval_set=[(X_val, y_val)], 
+        feature_name=feature_cols,
+        callbacks=[lgb.early_stopping(100), lgb.log_evaluation(period=0)]
     )
     
-    model.fit(
-        X_train, y_train,
-        eval_set=[(X_val, y_val)],
-        verbose=False
+    # --- 3. CatBoost ---
+    print("🤖 Training 3/3: CatBoost...")
+    cat_model = CatBoostClassifier(
+        iterations=700,
+        depth=7,
+        learning_rate=0.03,
+        loss_function='MultiClass',
+        random_state=42,
+        verbose=False,
+        early_stopping_rounds=50,
+        auto_class_weights='Balanced'
     )
+    cat_model.fit(X_train, y_train, eval_set=(X_val, y_val))
     
-    print(f"   ✅ Training complete!")
-    print(f"   Best iteration: {model.best_iteration}")
+    print(f"   ✅ All models trained!")
     
-    # Evaluate on validation set
-    print("\n📊 Validation Set Performance:")
-    y_val_pred = model.predict(X_val)
-    y_val_proba = model.predict_proba(X_val)[:, 1]
+    # --- Ensemble Validation ---
+    print("\n🎯 Evaluating Ensemble (Consensus)...")
     
-    print(classification_report(y_val, y_val_pred, target_names=['Loss', 'Win']))
-    print(f"   ROC AUC: {roc_auc_score(y_val, y_val_proba):.4f}")
+    def get_ensemble_proba(X_data):
+        # Returns [prob_class0, prob_class1, prob_class2]
+        p1 = xgb_model.predict_proba(X_data)
+        p2 = lgb_model.predict_proba(X_data)
+        p3 = cat_model.predict_proba(X_data)
+        return (p1 + p2 + p3) / 3
+
+    y_val_proba = get_ensemble_proba(X_val)
     
-    # Calibrate probabilities
-    print("\n🎯 Calibrating probabilities...")
-    calibrated_model = CalibratedClassifierCV(model, method='sigmoid', cv='prefit')
-    calibrated_model.fit(X_val, y_val)
-    print("   ✅ Calibration complete!")
+    # Find thresholds for maximum precision (Long = Class 1)
+    precisions_l, recalls_l, thresholds_l = precision_recall_curve((y_val == 1).astype(int), y_val_proba[:, 1])
+    # Find thresholds for maximum precision (Short = Class 2)
+    precisions_s, recalls_s, thresholds_s = precision_recall_curve((y_val == 2).astype(int), y_val_proba[:, 2])
     
-    # Get calibrated probabilities
-    y_val_proba_cal = calibrated_model.predict_proba(X_val)[:, 1]
+    def find_best_threshold(prec, recall, thresh, target_name):
+        high_precision_mask = (prec[:-1] >= 0.95) # Lowered to 95% for dual direction complexity
+        if np.any(high_precision_mask):
+            idx = np.where(high_precision_mask)[0]
+            best_idx = idx[np.argmax(recall[idx])]
+            return float(thresh[best_idx]), float(prec[best_idx]), float(recall[best_idx])
+        else:
+            best_idx = np.argmax(prec[:-1])
+            return float(thresh[best_idx]), float(prec[best_idx]), float(recall[best_idx])
+
+    thresh_long, prec_long, recall_long = find_best_threshold(precisions_l, recalls_l, thresholds_l, "Long")
+    thresh_short, prec_short, recall_short = find_best_threshold(precisions_s, recalls_s, thresholds_s, "Short")
     
-    # Find optimal threshold
-    print("\n🎯 Finding optimal threshold...")
-    precisions, recalls, thresholds = precision_recall_curve(y_val, y_val_proba_cal)
+    print(f"   🏆 Long Threshold:  {thresh_long:.4f} (Prec: {prec_long:.1%}, Recall: {recall_long:.2%})")
+    print(f"   🏆 Short Threshold: {thresh_short:.4f} (Prec: {prec_short:.1%}, Recall: {recall_short:.2%})")
+
+    # --- Save Models ---
+    print("\n💾 Saving models to root models/ directory...")
+    prefix = 'models/winner_hunter_1h_trio_'
     
-    # Calculate F1 scores
-    f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-10)
-    optimal_idx = np.argmax(f1_scores)
-    optimal_threshold = thresholds[optimal_idx]
+    xgb_model.save_model(f'{prefix}xgb.json')
+    lgb_model.booster_.save_model(f'{prefix}lgb.json')
+    cat_model.save_model(f'{prefix}cat.json')
+    print(f"   ✅ Saved XGBoost to {prefix}xgb.json")
+    print(f"   ✅ Saved LightGBM to {prefix}lgb.json")
+    print(f"   ✅ Saved CatBoost to {prefix}cat.json")
     
-    print(f"   Optimal threshold (max F1): {optimal_threshold:.4f}")
-    print(f"   Precision at threshold: {precisions[optimal_idx]:.4f}")
-    print(f"   Recall at threshold: {recalls[optimal_idx]:.4f}")
-    print(f"   F1 score: {f1_scores[optimal_idx]:.4f}")
-    
-    # Find threshold for 90% precision
-    precision_90_idx = np.where(precisions >= 0.90)[0]
-    if len(precision_90_idx) > 0:
-        threshold_90 = thresholds[precision_90_idx[0]]
-        print(f"\n   Threshold for 90% precision: {threshold_90:.4f}")
-        print(f"   Recall at 90% precision: {recalls[precision_90_idx[0]]:.4f}")
-    
-    # Analyze confidence distribution
-    print("\n📊 Confidence Distribution (Validation Set):")
-    print(f"   Mean: {np.mean(y_val_proba_cal):.4f}")
-    print(f"   Median: {np.median(y_val_proba_cal):.4f}")
-    print(f"   Min: {np.min(y_val_proba_cal):.4f}")
-    print(f"   Max: {np.max(y_val_proba_cal):.4f}")
-    print(f"   95th percentile: {np.percentile(y_val_proba_cal, 95):.4f}")
-    
-    # Count samples above various thresholds
-    print("\n📊 Samples above thresholds:")
-    for thresh in [0.05, 0.10, 0.15, 0.20, 0.30, 0.50, 0.70, 0.90]:
-        count = np.sum(y_val_proba_cal >= thresh)
-        pct = (count / len(y_val_proba_cal)) * 100
-        print(f"   {thresh:.0%}: {count:,} samples ({pct:.2f}%)")
-    
-    # Save model
-    print("\n💾 Saving model...")
-    model_path = 'training/models/winner_hunter_1h_v2.json'
-    model.save_model(model_path)
-    print(f"   ✅ Saved to {model_path}")
-    
-    # Save calibrated model (using pickle)
-    import pickle
-    calibrated_path = 'training/models/winner_hunter_1h_v2_calibrated.pkl'
-    with open(calibrated_path, 'wb') as f:
-        pickle.dump(calibrated_model, f)
-    print(f"   ✅ Saved calibrated model to {calibrated_path}")
-    
-    # Save metadata
+    # Save ensemble metadata
     metadata = {
-        'model': 'Winner Hunter (1H)',
-        'version': 'v2',
-        'train_samples': int(len(X_train)),
-        'val_samples': int(len(X_val)),
-        'test_samples': int(len(X_test)),
-        'features': len(feature_cols),
-        'win_rate_train': float(np.sum(y_train) / len(y_train)),
-        'win_rate_val': float(np.sum(y_val) / len(y_val)),
-        'optimal_threshold': float(optimal_threshold),
-        'threshold_90_precision': float(threshold_90) if len(precision_90_idx) > 0 else None,
-        'val_roc_auc': float(roc_auc_score(y_val, y_val_proba_cal)),
-        'confidence_mean': float(np.mean(y_val_proba_cal)),
-        'confidence_95th': float(np.percentile(y_val_proba_cal, 95))
+        'model': 'Winner Hunter (1H) Trio Ensemble',
+        'models': ['XGBoost', 'LightGBM', 'CatBoost'],
+        'date_trained': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M'),
+        'feature_count': len(feature_cols),
+        'target_precision_threshold_long': thresh_long,
+        'target_precision_threshold_short': thresh_short,
+        'expected_precision_long': prec_long,
+        'expected_precision_short': prec_short,
+        'val_auc': float(roc_auc_score(pd.get_dummies(y_val), y_val_proba, multi_class='ovr'))
     }
     
-    metadata_path = 'training/models/winner_hunter_1h_v2_metadata.json'
-    with open(metadata_path, 'w') as f:
-        json.dump(metadata, f, indent=2)
-    print(f"   ✅ Saved metadata to {metadata_path}")
+    with open(f'{prefix}metadata.json', 'w') as f:
+        json.dump(metadata, f, indent=4)
+        
+    print(f"   ✅ All models and metadata saved to training/models/")
+
+    # --- Final Test ---
+    print("\n📊 Final Test Set Performance:")
+    y_test_proba = get_ensemble_proba(X_test)
     
-    # Final summary
+    long_trades = np.sum(y_test_proba[:, 1] >= thresh_long)
+    short_trades = np.sum(y_test_proba[:, 2] >= thresh_short)
+    
+    print(f"   Test Longs identified:  {long_trades}")
+    print(f"   Test Shorts identified: {short_trades}")
+
     print("\n" + "="*70)
-    print("✅ WINNER HUNTER TRAINING COMPLETE!")
-    print("="*70)
-    print(f"Model: {model_path}")
-    print(f"Optimal threshold: {optimal_threshold:.4f}")
-    print(f"Recommended threshold (90% precision): {threshold_90:.4f}" if len(precision_90_idx) > 0 else "")
+    print("✅ WINNER HUNTER TRIO TRAINING COMPLETE")
     print("="*70)
 
 if __name__ == '__main__':

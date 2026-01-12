@@ -1,0 +1,30 @@
+# Quant Engine - Cloud Deployment
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements_quant.txt .
+RUN pip install --no-cache-dir -r requirements_quant.txt && \
+    pip install --no-cache-dir flask
+
+# Copy quant engine
+COPY quant_engine/ ./quant_engine/
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Set environment
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 8080
+
+# Run the cloud wrapper (includes Flask server + trading engine)
+CMD ["python", "quant_engine/cloud_runner.py"]

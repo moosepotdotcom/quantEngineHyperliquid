@@ -58,7 +58,18 @@ class WhaleWatcher(threading.Thread):
                             log_to_journal(title, details, emoji)
                             
             except Exception as e:
+                # print(f"⚠️ Whale Watcher Error: {e}")
                 await asyncio.sleep(5)
+
+    def get_bias(self):
+        """Returns current bias: 1 (Bullish), -1 (Bearish), 0 (Neutral)"""
+        if not self.latest_whale:
+            return 0
+        
+        # Only favor if whale happened in last 5 minutes
+        if time.time() - self.latest_whale['time'] < 300:
+            return 1 if self.latest_whale['side'] == 'BUY' else -1
+        return 0
 
     def stop(self):
         self.running = False

@@ -37,8 +37,6 @@ def generate_features_1h():
     output_file = 'training/data/BTC_1h_features.csv'
     df.to_csv(output_file, index=False)
     print(f"\n✅ Saved to {output_file}")
-    print(f"   Rows: {len(df):,}")
-    print(f"   Columns: {len(df.columns)}")
     
     return df
 
@@ -69,8 +67,6 @@ def generate_features_5m():
     output_file = 'training/data/BTC_5m_features.csv'
     df.to_csv(output_file, index=False)
     print(f"\n✅ Saved to {output_file}")
-    print(f"   Rows: {len(df):,}")
-    print(f"   Columns: {len(df.columns)}")
     
     return df
 
@@ -101,15 +97,13 @@ def generate_features_15m():
     output_file = 'training/data/BTC_15m_features.csv'
     df.to_csv(output_file, index=False)
     print(f"\n✅ Saved to {output_file}")
-    print(f"   Rows: {len(df):,}")
-    print(f"   Columns: {len(df.columns)}")
     
     return df
 
 def merge_mtf_features():
     """Merge multi-timeframe features for MTF Scalper"""
     print("\n" + "="*70)
-    print("4️⃣ MERGING MULTI-TIMEFRAME FEATURES")
+    print("4️⃣ MERGING MULTI-TIMEFRAME FEATURES (5M Base)")
     print("="*70)
     
     # Load all feature datasets
@@ -117,55 +111,90 @@ def merge_mtf_features():
     df_5m = pd.read_csv('training/data/BTC_5m_features.csv')
     df_5m['timestamp'] = pd.to_datetime(df_5m['timestamp'])
     df_5m.set_index('timestamp', inplace=True)
-    print(f"   5M:  {len(df_5m):,} rows, {len(df_5m.columns)} columns")
     
     df_15m = pd.read_csv('training/data/BTC_15m_features.csv')
     df_15m['timestamp'] = pd.to_datetime(df_15m['timestamp'])
     df_15m.set_index('timestamp', inplace=True)
-    print(f"   15M: {len(df_15m):,} rows, {len(df_15m.columns)} columns")
     
-    # Merge 15M context
-    print("\n🔧 Merging 15M context...")
-    exclude = ['open', 'high', 'low', 'close', 'volume']
-    ctx_cols_15m = [c for c in df_15m.columns if c not in exclude]
-    df_15m_renamed = df_15m[ctx_cols_15m].copy()
-    df_15m_renamed.columns = [f"{c}_15m" for c in ctx_cols_15m]
-    df_15m_resampled = df_15m_renamed.reindex(df_5m.index, method='ffill')
-    df_mtf = pd.concat([df_5m, df_15m_resampled], axis=1)
-    print(f"   After 15M merge: {len(df_mtf.columns)} columns")
-    
-    # Load 1H data for context (using same as Winner Hunter)
     df_1h = pd.read_csv('training/data/BTC_1h_features.csv')
     df_1h['timestamp'] = pd.to_datetime(df_1h['timestamp'])
     df_1h.set_index('timestamp', inplace=True)
-    print(f"   1H:  {len(df_1h):,} rows, {len(df_1h.columns)} columns")
     
-    # Merge 1H context
-    print("\n🔧 Merging 1H context...")
+    # Merge context
+    print("\n🔧 Merging context...")
+    exclude = ['open', 'high', 'low', 'close', 'volume']
+    
+    # 15M context
+    ctx_cols_15m = [c for c in df_15m.columns if c not in exclude]
+    df_15m_ctx = df_15m[ctx_cols_15m].copy()
+    df_15m_ctx.columns = [f"{c}_15m" for c in ctx_cols_15m]
+    df_15m_resampled = df_15m_ctx.reindex(df_5m.index, method='ffill')
+    
+    # 1H context
     ctx_cols_1h = [c for c in df_1h.columns if c not in exclude]
-    df_1h_renamed = df_1h[ctx_cols_1h].copy()
-    df_1h_renamed.columns = [f"{c}_1h" for c in ctx_cols_1h]
-    df_1h_resampled = df_1h_renamed.reindex(df_mtf.index, method='ffill')
-    df_mtf = pd.concat([df_mtf, df_1h_resampled], axis=1)
-    print(f"   After 1H merge: {len(df_mtf.columns)} columns (MTF complete)")
+    df_1h_ctx = df_1h[ctx_cols_1h].copy()
+    df_1h_ctx.columns = [f"{c}_1h" for c in ctx_cols_1h]
+    df_1h_resampled = df_1h_ctx.reindex(df_5m.index, method='ffill')
     
-    # Drop NaN rows
-    initial_len = len(df_mtf)
+    # Combine
+    df_mtf = pd.concat([df_5m, df_15m_resampled, df_1h_resampled], axis=1)
     df_mtf.dropna(inplace=True)
-    print(f"\n   Dropped {initial_len - len(df_mtf):,} NaN rows")
-    print(f"   Final MTF dataset: {len(df_mtf):,} rows")
     
-    # Reset index
+    # Reset index and save
     df_mtf.reset_index(inplace=True)
-    
-    # Save
     output_file = 'training/data/BTC_5m_mtf_features.csv'
     df_mtf.to_csv(output_file, index=False)
     print(f"\n✅ Saved to {output_file}")
-    print(f"   Rows: {len(df_mtf):,}")
-    print(f"   Columns: {len(df_mtf.columns)}")
     
     return df_mtf
+
+def merge_mtf_features_1h():
+    """Merge multi-timeframe features (5m, 15m) into 1H data for Winner Hunter"""
+    print("\n" + "="*70)
+    print("5️⃣ MERGING MTF FEATURES FOR 1H DATA (Winner Hunter)")
+    print("="*70)
+    
+    # Load feature datasets
+    print("\n📊 Loading feature datasets...")
+    df_1h = pd.read_csv('training/data/BTC_1h_features.csv')
+    df_1h['timestamp'] = pd.to_datetime(df_1h['timestamp'])
+    df_1h.set_index('timestamp', inplace=True)
+    
+    df_5m = pd.read_csv('training/data/BTC_5m_features.csv')
+    df_5m['timestamp'] = pd.to_datetime(df_5m['timestamp'])
+    df_5m.set_index('timestamp', inplace=True)
+    
+    df_15m = pd.read_csv('training/data/BTC_15m_features.csv')
+    df_15m['timestamp'] = pd.to_datetime(df_15m['timestamp'])
+    df_15m.set_index('timestamp', inplace=True)
+    
+    # Merge lower timeframe context
+    print("\n🔧 Merging lower timeframe context...")
+    exclude = ['open', 'high', 'low', 'close', 'volume']
+    
+    # Aggregate 5M context
+    ctx_cols_5m = [c for c in df_5m.columns if c not in exclude]
+    df_5m_context = df_5m[ctx_cols_5m].copy()
+    df_5m_context.columns = [f"{c}_5m" for c in ctx_cols_5m]
+    df_5m_resampled = df_5m_context.reindex(df_1h.index, method='ffill')
+    
+    # Aggregate 15M context
+    ctx_cols_15m = [c for c in df_15m.columns if c not in exclude]
+    df_15m_context = df_15m[ctx_cols_15m].copy()
+    df_15m_context.columns = [f"{c}_15m" for c in ctx_cols_15m]
+    df_15m_resampled = df_15m_context.reindex(df_1h.index, method='ffill')
+    
+    # Combine
+    df_1h_mtf = pd.concat([df_1h, df_5m_resampled, df_15m_resampled], axis=1)
+    df_1h_mtf.dropna(inplace=True)
+    
+    # Reset index and save
+    df_1h_mtf.reset_index(inplace=True)
+    output_file = 'training/data/BTC_1h_mtf_features.csv'
+    df_1h_mtf.to_csv(output_file, index=False)
+    print(f"\n✅ Saved to {output_file}")
+    
+    return df_1h_mtf
 
 def main():
     """Main execution"""
@@ -173,23 +202,20 @@ def main():
     print("🔧 FEATURE ENGINEERING PIPELINE")
     print("="*70)
     
-    # Generate features for each timeframe
-    df_1h = generate_features_1h()
-    df_5m = generate_features_5m()
-    df_15m = generate_features_15m()
+    # Generate base features for each timeframe
+    generate_features_1h()
+    generate_features_5m()
+    generate_features_15m()
     
     # Merge multi-timeframe features
-    df_mtf = merge_mtf_features()
+    merge_mtf_features()
+    merge_mtf_features_1h()
     
-    # Summary
     print("\n" + "="*70)
-    print("📊 FEATURE ENGINEERING SUMMARY")
+    print("✅ FEATURE ENGINEERING SUMMARY")
     print("="*70)
-    print(f"1H features:  {len(df_1h):,} rows, {len(df_1h.columns)} columns")
-    print(f"5M features:  {len(df_5m):,} rows, {len(df_5m.columns)} columns")
-    print(f"15M features: {len(df_15m):,} rows, {len(df_15m.columns)} columns")
-    print(f"MTF features: {len(df_mtf):,} rows, {len(df_mtf.columns)} columns")
-    print("\n✅ All features generated successfully!")
+    print("1H MTF Features: training/data/BTC_1h_mtf_features.csv")
+    print("5M MTF Features: training/data/BTC_5m_mtf_features.csv")
     print("="*70)
 
 if __name__ == '__main__':

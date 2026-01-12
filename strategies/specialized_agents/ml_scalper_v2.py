@@ -28,9 +28,12 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add Root to Path
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
 
-from research.mtf_feature_engineer import MTFFeatureGenerator
+from utils.mtf_feature_engineer import MTFFeatureGenerator
 
 # ML Imports
 try:

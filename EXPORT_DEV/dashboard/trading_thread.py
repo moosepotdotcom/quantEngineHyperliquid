@@ -64,6 +64,12 @@ class TradingThread(threading.Thread):
             'margin_usage': 0.0,
             'funding_rate': 0.0,
             'alpha_status': {}, # For UI Toggles
+            'fleet_bias': {
+                'whale': 0,
+                'liq': 0,
+                'funding': 0,
+                'total': 0
+            },
             'logs': []
         }
 
@@ -224,6 +230,21 @@ class TradingThread(threading.Thread):
                     # Store Dual-Bias Probs
                     self.latest_data['mtf_probs'] = engine.last_probs['MTF']
                     self.latest_data['wh_probs'] = engine.last_probs['WH']
+                    
+                    # Store Fleet Biases
+                    if hasattr(engine, 'use_fleet') and engine.use_fleet:
+                        w_bias = engine.whale_watcher.get_bias() if hasattr(engine.whale_watcher, 'get_bias') else 0
+                        l_bias = engine.liq_monitor.get_bias() if hasattr(engine.liq_monitor, 'get_bias') else 0
+                        f_bias = engine.funding_monitor.get_bias() if hasattr(engine.funding_monitor, 'get_bias') else 0
+                        
+                        self.latest_data['fleet_bias'] = {
+                            'whale': w_bias,
+                            'liq': l_bias,
+                            'funding': f_bias,
+                            'total': w_bias + l_bias + f_bias
+                        }
+                    else:
+                        self.latest_data['fleet_bias'] = {'whale': 0, 'liq': 0, 'funding': 0, 'total': 0}
 
                     if wh_signal:
                         self.latest_data['signal'] = f"WH: {wh_signal['direction']}"

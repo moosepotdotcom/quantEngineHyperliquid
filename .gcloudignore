@@ -1,0 +1,21 @@
+.gcloudignore
+.git
+.gitignore
+
+# Exclude large data and training files
+training/
+*.csv
+logs/
+.venv/
+__pycache__/
+*.ipynb
+*.png
+*.jpg
+.env*
+! .env.live_trading
+
+# Keep models and core code
+!models/
+!utils/
+!ml/
+!monitoring/

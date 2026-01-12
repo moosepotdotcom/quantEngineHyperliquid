@@ -1,0 +1,15 @@
+{
+    "model": "MTF Scalper (5M) Trio Ensemble",
+    "models": [
+        "XGBoost",
+        "LightGBM",
+        "CatBoost"
+    ],
+    "date_trained": "2026-01-07 22:32",
+    "feature_count": 231,
+    "target_precision_threshold_long": 0.5987269767046627,
+    "target_precision_threshold_short": 0.6890914823873434,
+    "expected_precision_long": 0.9509803921568627,
+    "expected_precision_short": 0.9565217391304348,
+    "val_auc": 0.6246055771341076
+}

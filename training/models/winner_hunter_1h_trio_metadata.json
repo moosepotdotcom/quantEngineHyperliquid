@@ -1,0 +1,15 @@
+{
+    "model": "Winner Hunter (1H) Trio Ensemble",
+    "models": [
+        "XGBoost",
+        "LightGBM",
+        "CatBoost"
+    ],
+    "date_trained": "2026-01-07 22:27",
+    "feature_count": 231,
+    "target_precision_threshold_long": 0.3412205188770942,
+    "target_precision_threshold_short": 0.4788571431885254,
+    "expected_precision_long": 0.6666666666666666,
+    "expected_precision_short": 0.6666666666666666,
+    "val_auc": 0.5604177641784629
+}

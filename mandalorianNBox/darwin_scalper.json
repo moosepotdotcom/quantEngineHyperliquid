@@ -1,0 +1,11 @@
+{
+    "buy_conditions": [
+        "rsi_14 < 25"
+    ],
+    "sell_conditions": [
+        "rsi_14 > 75"
+    ],
+    "stop_loss_pct": 3.0,
+    "take_profit_pct": 1.0,
+    "win_rate": 0.0
+}
