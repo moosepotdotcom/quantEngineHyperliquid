@@ -16,13 +16,20 @@ This engine includes two distinct execution modes to handle market conditions an
 *   **Risk:** Higher fees (0.07% roundtrip).
 *   **Dashboard:** `rich_dashboard.py`
 
-### 2. Maker Mode (Rebate Farming) 🛡️
+### 2. Hybrid Mode (The "Goldilocks" Zone) 🌟
+*   **Logic:** Taker Entry (Market) + Maker Exit (Limit).
+*   **Best For:** Catching every move (Aggressive Entry) while saving fees on exit.
+*   **Cost:** **0.025% Net Fee** (0.035% Taker - 0.01% Rebate).
+*   **Dashboard:** `rich_dashboard_hybrid.py`
+
+### 3. Maker Mode (Rebate Farming) 🛡️
 *   **Logic:** Uses Post-Only Limit Orders at Best Bid/Ask.
 *   **Feature:** **"Chase" Logic** automatically updates limit prices to stay at the front of the queue.
 *   **Best For:** Micro-scalping (capturing spread + 0.02% Rebate).
 *   **Risk:** Execution risk (might miss fast moves if not filled).
 *   **Dashboard:** `rich_dashboard_maker.py`
 *   **Headless Bot:** `automated_strategy_maker.py`
+
 
 ---
 
@@ -39,6 +46,11 @@ python3 rich_dashboard.py
 **Maker Rebate Dashboard:**
 ```bash
 python3 rich_dashboard_maker.py
+```
+
+**Hybrid Strategy Dashboard (Recommended):**
+```bash
+python3 rich_dashboard_hybrid.py
 ```
 
 ### B. Headless Execution (Automated)
