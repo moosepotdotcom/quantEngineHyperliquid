@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Activity, TrendingUp, TrendingDown, DollarSign, Wallet, ShieldCheck, Zap, RefreshCw, XCircle, Power, Settings } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import ConfirmationModal from './ConfirmationModal';
 
 const API_URL = 'http://127.0.0.1:8000';
 
@@ -12,10 +12,6 @@ export default function Dashboard() {
     const [account, setAccount] = useState({ mode: 'Loading...', leverage: 3, balance: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Modal State
-    const [modal, setModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, isDanger: false });
-    const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }));
 
     const fetchData = async () => {
         try {
@@ -54,23 +50,16 @@ export default function Dashboard() {
         return { headers: { Authorization: `Bearer ${token}` } };
     };
 
-    const toggleMode = () => {
+    const toggleMode = async () => {
         const newMode = account.mode === 'LIVE' ? 'PAPER' : 'LIVE';
-        setModal({
-            isOpen: true,
-            title: `Switch to ${newMode} Mode?`,
-            message: `This will reset the local strategy state. ${newMode === 'LIVE' ? 'Real trades will be executed.' : 'Trading will be simulated.'}`,
-            isDanger: newMode === 'LIVE',
-            onConfirm: async () => {
-                try {
-                    await axios.post(`${API_URL}/settings/mode`, { mode: newMode }, getAuthHeaders());
-                    fetchData();
-                } catch (e) {
-                    if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
-                    else alert("Failed to switch mode");
-                }
-            }
-        });
+        if (!confirm(`Switch to ${newMode} mode? This will reset local state.`)) return;
+        try {
+            await axios.post(`${API_URL}/settings/mode`, { mode: newMode }, getAuthHeaders());
+            fetchData();
+        } catch (e) {
+            if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
+            else alert("Failed to switch mode");
+        }
     };
 
     const changeLeverage = async (e) => {
@@ -84,42 +73,26 @@ export default function Dashboard() {
         }
     };
 
-    // Helper for manual close actions
-    const closePosition = (coin) => {
-        setModal({
-            isOpen: true,
-            title: `Close ${coin}?`,
-            message: "Are you sure you want to manually close this position?",
-            isDanger: true,
-            onConfirm: async () => {
-                try {
-                    await axios.post(`${API_URL}/trade/close/${coin}`, {}, getAuthHeaders());
-                    fetchData();
-                } catch (e) {
-                    if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
-                    else alert("Close failed");
-                }
-            }
-        });
+    const closePosition = async (coin) => {
+        if (!confirm(`Close ${coin} position?`)) return;
+        try {
+            await axios.post(`${API_URL}/trade/close/${coin}`, {}, getAuthHeaders());
+            fetchData();
+        } catch (e) {
+            if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
+            else alert("Close failed");
+        }
     };
 
-    // Helper for panic close
-    const closeAll = () => {
-        setModal({
-            isOpen: true,
-            title: "PANIC CLOSE ALL?",
-            message: "This will immediately market close ALL open positions. Use only in emergencies.",
-            isDanger: true,
-            onConfirm: async () => {
-                try {
-                    await axios.post(`${API_URL}/trade/close-all`, {}, getAuthHeaders());
-                    fetchData();
-                } catch (e) {
-                    if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
-                    else alert("Close All failed");
-                }
-            }
-        });
+    const closeAll = async () => {
+        if (!confirm(`PANIC CLOSE ALL POSITIONS?`)) return;
+        try {
+            await axios.post(`${API_URL}/trade/close-all`, {}, getAuthHeaders());
+            fetchData();
+        } catch (e) {
+            if (e.response?.status === 401) alert("Unauthorized: Please Login Again");
+            else alert("Close All failed");
+        }
     };
 
     // --- UI Logic ---
@@ -138,19 +111,12 @@ export default function Dashboard() {
         if (activeTab === 'users') fetchSubscribers();
     }, [activeTab]);
 
-    const removeSubscriber = (userId) => {
-        setModal({
-            isOpen: true,
-            title: `Kick User ${userId}?`,
-            message: "They will immediately stop copying new trades. Existing trades may remain open.",
-            isDanger: true,
-            onConfirm: async () => {
-                try {
-                    await axios.delete(`${API_URL}/saas/subscriber/${userId}`, getAuthHeaders());
-                    fetchSubscribers();
-                } catch (e) { alert("Failed to remove user"); }
-            }
-        });
+    const removeSubscriber = async (userId) => {
+        if (!confirm(`Remove user ${userId}? They will stop copying trades.`)) return;
+        try {
+            await axios.delete(`${API_URL}/saas/subscriber/${userId}`, getAuthHeaders());
+            fetchSubscribers();
+        } catch (e) { alert("Failed to remove user"); }
     };
 
     return (
@@ -324,15 +290,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
-
-            <ConfirmationModal
-                isOpen={modal.isOpen}
-                onClose={closeModal}
-                onConfirm={modal.onConfirm}
-                title={modal.title}
-                message={modal.message}
-                isDanger={modal.isDanger}
-            />
         </div>
     );
 }
@@ -387,6 +344,9 @@ function MarketRow({ data }) {
 
 function PositionCard({ coin, pos, onClose }) {
     const isLong = pos.type === 'LONG';
+    // Calculate simulated PnL (frontend estimation) since backend sends it too? 
+    // Ideally backend sends PnL. For now we assume backend enriches positions logic later.
+    // We can just show entry/size.
 
     return (
         <div className="bg-slate-700/30 p-4 rounded-xl border border-slate-600 hover:bg-slate-700/50 transition-colors relative group">

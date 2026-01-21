@@ -115,7 +115,68 @@ def add_features(df):
 
 
 
+    def place_order(self, coin, is_buy, size_usd, tp=None, sl=None):
+        if self.execution:
+            # Update leverage before trade if needed (or assume set globally)
+            # Paper engine uses internal leverage. Live uses account leverage (set in GUI/Hyperliquid)
+            if self.mode == 'PAPER':
+                self.execution.leverage = self.leverage
+                
+            print(f"\n🚀 EXECUTING AUTOMATED TRADE via {self.mode} Engine...")
+            success = self.execution.execute_trade(coin, is_buy, size_usd, tp, sl)
+            return success
+        else:
+            print("❌ No Execution Engine Active")
+            return False
 
+    def set_mode(self, new_mode):
+        if new_mode not in ['LIVE', 'PAPER']: return False
+        if new_mode == self.mode: return True
+        
+        print(f"🔄 Switching Mode: {self.mode} -> {new_mode}")
+        self.mode = new_mode
+        self.active_positions = {} # Clear local tracker on switch
+        
+        if self.mode == 'LIVE':
+             try:
+                self.execution = HyperliquidTrader(testnet=False)
+                self.market_open = True
+             except:
+                self.execution = None
+        else:
+             self.execution = PaperExecutionEngine(initial_balance=10000.0)
+             self.market_open = True
+             
+        return True
+
+    def set_leverage(self, lev):
+        self.leverage = lev
+        if self.mode == 'PAPER':
+            self.execution.leverage = lev
+        # For LIVE, leverage is usually set on account, but we can store it for size calc
+        global LEVERAGE 
+        LEVERAGE = lev
+        return True
+
+    def manual_close(self, coin):
+        if self.mode == 'PAPER':
+            return self.execution.close_position(coin)
+        elif self.mode == 'LIVE' and self.execution:
+            # Live close logic needs to be added to HyperliquidTrader or handled here
+            # For now, let's assume we implement close_position in HyperliquidTrader too?
+            # Or use place_market_order based on position.
+            # Best to implement close_position in HyperliquidTrader for parity.
+            pass
+        return False
+
+    def manual_close_all(self):
+        if self.mode == 'PAPER':
+            return self.execution.close_all()
+        # Live panic close
+        if self.mode == 'LIVE' and self.execution:
+            self.execution.emergency_stop_all()
+            return True
+        return False
 
 # ... (Imports remain the same)
 
@@ -252,69 +313,6 @@ class WilliamsStrategy:
                  self.copy_engine.broadcast_trade(coin, False, price, MAX_POSITION_SIZE_USD, tp, sl)
             
         # self.active_positions update removed - rely on execution engine
-
-    def place_order(self, coin, is_buy, size_usd, tp=None, sl=None):
-        if self.execution:
-            # Update leverage before trade if needed (or assume set globally)
-            # Paper engine uses internal leverage. Live uses account leverage (set in GUI/Hyperliquid)
-            if self.mode == 'PAPER':
-                self.execution.leverage = self.leverage
-                
-            print(f"\n🚀 EXECUTING AUTOMATED TRADE via {self.mode} Engine...")
-            success = self.execution.execute_trade(coin, is_buy, size_usd, tp, sl)
-            return success
-        else:
-            print("❌ No Execution Engine Active")
-            return False
-
-    def set_mode(self, new_mode):
-        if new_mode not in ['LIVE', 'PAPER']: return False
-        if new_mode == self.mode: return True
-        
-        print(f"🔄 Switching Mode: {self.mode} -> {new_mode}")
-        self.mode = new_mode
-        self.active_positions = {} # Clear local tracker on switch
-        
-        if self.mode == 'LIVE':
-             try:
-                self.execution = HyperliquidTrader(testnet=False)
-                self.market_open = True
-             except:
-                self.execution = None
-        else:
-             self.execution = PaperExecutionEngine(initial_balance=10000.0)
-             self.market_open = True
-             
-        return True
-
-    def set_leverage(self, lev):
-        self.leverage = lev
-        if self.mode == 'PAPER':
-            self.execution.leverage = lev
-        # For LIVE, leverage is usually set on account, but we can store it for size calc
-        global LEVERAGE 
-        LEVERAGE = lev
-        return True
-
-    def manual_close(self, coin):
-        if self.mode == 'PAPER':
-            return self.execution.close_position(coin)
-        elif self.mode == 'LIVE' and self.execution:
-            # Live close logic needs to be added to HyperliquidTrader or handled here
-            # For now, let's assume we implement close_position in HyperliquidTrader too?
-            # Or use place_market_order based on position.
-            # Best to implement close_position in HyperliquidTrader for parity.
-            pass
-        return False
-
-    def manual_close_all(self):
-        if self.mode == 'PAPER':
-            return self.execution.close_all()
-        # Live panic close
-        if self.mode == 'LIVE' and self.execution:
-            self.execution.emergency_stop_all()
-            return True
-        return False
 
 def run_bot():
     print("🤖 WILLIAMS %R V1 LIVE TRADER (Sanity One)")
