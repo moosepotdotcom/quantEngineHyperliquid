@@ -171,9 +171,19 @@ class HyperliquidTrader:
         print(f"\n🔧 DEBUG: place_tp_sl_orders() called with symbol={symbol}, size={size}, tp={tp_price}, sl={sl_price}, is_long={is_long}")
         print(f"\n📋 Placing TP/SL trigger orders on Hyperliquid...")
         
-        # Round prices to INTEGERS (Hyperliquid requirement for SL orders)
-        tp_price_rounded = round(tp_price, 0)  # Integer
-        sl_price_rounded = round(sl_price, 0)  # Integer
+        # Round prices based on magnitude
+        # Heuristic for Hyperliquid precision (can be fetched from info, but this is safe)
+        def get_decimals(px):
+            if px > 1000: return 1 # BTC, ETH
+            if px > 10: return 2   # SOL, AVAX
+            if px > 1: return 3    # SUI
+            return 4               # Low cap
+            
+        tp_decimals = get_decimals(tp_price)
+        sl_decimals = get_decimals(sl_price)
+        
+        tp_price_rounded = round(tp_price, tp_decimals)
+        sl_price_rounded = round(sl_price, sl_decimals)
         
         # Exits are opposite of entry
         exit_is_buy = not is_long
