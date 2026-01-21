@@ -199,7 +199,9 @@ class WilliamsStrategy:
              self.market_open = True
 
         self.leverage = 3
-        self.active_positions = {}
+        self.leverage = 3
+        # self.active_positions = {} # REMOVED: Use Execution Engine as Source of Truth
+        self.copy_engine = None # Injected by API
         self.coins = ['BTC', 'ETH', 'SOL', 'AVAX', 'SUI']
         self.features = ['williams_r', 'rsi_14', 'atr_14', 'vol_change', 'ema_200_dist']
         
@@ -271,11 +273,25 @@ class WilliamsStrategy:
                         
             except Exception as e:
                 status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'signal': None, 'error': str(e)})
+        
+        # AUTOMATED PAPER POSITION MANAGEMENT
+        # Check active positions for TP/SL hits using the latest prices we just fetched
+        if self.mode == 'PAPER' and self.execution:
+            current_prices = {s['coin']: s['price'] for s in status if s['price'] > 0}
+            self.execution.check_positions(current_prices)
                 
         return status
 
     def execute_signal(self, coin, signal, price):
-        if coin in self.active_positions: return # Debounce
+        # SINGLE SOURCE OF TRUTH DEBOUNCE
+        if self.execution:
+            info = self.execution.get_account_info()
+            positions = info.get('positions', [])
+            active_coins = {p.get('coin') for p in positions}
+            
+            if coin in active_coins:
+                # print(f"   Debounce: {coin} already open")
+                return 
         
         print(f"   🚨 SIGNAL FOUND: {coin} {signal}")
         
@@ -284,13 +300,19 @@ class WilliamsStrategy:
             sl = price * (1 - SL_PCT)
             # Use Instance Method
             self.place_order(coin, True, MAX_POSITION_SIZE_USD, tp, sl)
+            # SaaS Broadcast
+            if self.copy_engine:
+                 self.copy_engine.broadcast_trade(coin, True, price, MAX_POSITION_SIZE_USD, tp, sl)
         else:
             tp = price * (1 - TP_PCT)
             sl = price * (1 + SL_PCT)
             # Use Instance Method
             self.place_order(coin, False, MAX_POSITION_SIZE_USD, tp, sl)
+            # SaaS Broadcast
+            if self.copy_engine:
+                 self.copy_engine.broadcast_trade(coin, False, price, MAX_POSITION_SIZE_USD, tp, sl)
             
-        self.active_positions[coin] = {'entry': price, 'type': signal, 'ts': datetime.now()}
+        # self.active_positions update removed - rely on execution engine
 
 def run_bot():
     print("🤖 WILLIAMS %R V1 LIVE TRADER (Sanity One)")

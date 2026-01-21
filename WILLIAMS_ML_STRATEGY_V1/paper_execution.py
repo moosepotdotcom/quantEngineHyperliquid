@@ -13,15 +13,46 @@ class PaperExecutionEngine:
         self.leverage = 3
         self.daily_pnl = 0.0
         self.emergency_stop = False
-        print(f"📝 Paper Trading Engine Initialized. Balance: ${self.balance:.2f}")
+        
+        # Logging Setup
+        import logging
+        logging.basicConfig(
+            filename='paper_trading.log',
+            level=logging.INFO,
+            format='%(asctime)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        self.logger = logging.getLogger()
+        
+        self.log(f"📝 Paper Trading Engine Initialized. Balance: ${self.balance:.2f}")
+
+    def log(self, msg):
+        print(msg)
+        self.logger.info(msg)
 
     def get_account_info(self):
-        """Mock account info"""
-        # Calculate unrealized PnL? 
-        # For simple balance, we just return realized balance.
+        """Mock account info in Hyperliquid format"""
+        # We need current prices to calc unrealized PnL.
+        # But this method is usually called by API which just wants list.
+        # We can set PnL to 0 for now or fetch? Fetching slows down API.
+        # Let's set PnL to 0 or estimates.
+        
+        hl_positions = []
+        for coin, pos in self.active_positions.items():
+            size = pos['size']
+            if pos['type'] == 'SHORT': size = -size
+            
+            hl_positions.append({
+                "coin": coin,
+                "entryPx": str(pos['entry']),
+                "szi": str(size),
+                "unrealizedPnl": "0.0", # Todo: update with real price
+                "returnOnEquity": "0.0"
+            })
+            
         return {
             'balance': self.balance,
-            'positions': [] # detailed positions tracked internally
+            'positions': hl_positions 
         }
 
     def calculate_order_size(self, price):

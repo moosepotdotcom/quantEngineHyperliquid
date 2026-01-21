@@ -3,11 +3,13 @@ import asyncio
 from fastapi import FastAPI, BackgroundTasks
 from contextlib import asynccontextmanager
 from live_trader import WilliamsStrategy
+from copy_trading import CopyTradingEngine
 import threading
 import time
 
 # Global Strategy Instance
 strategy = None
+copy_engine = None
 is_running = False
 background_thread = None
 
@@ -30,9 +32,16 @@ def strategy_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global strategy, is_running, background_thread
+    global strategy, is_running, background_thread, copy_engine
     print("🔌 Starting Quant Engine API...")
     strategy = WilliamsStrategy()
+    copy_engine = CopyTradingEngine()
+    
+    # Link Strategy to Copy Engine
+    # We need to inject the copy engine into the strategy or hook it up
+    # For now, let's just make it available globally.
+    # Ideally, strategy should call copy_engine.broadcast_trade()
+    strategy.copy_engine = copy_engine
     
     # Auto-start the bot loop on server launch? 
     # Let's make it manual via /start to be safe, or auto.
@@ -96,7 +105,17 @@ def get_market_status():
     if not strategy: return {"error": "Strategy initializing"}
     try:
         raw_status = strategy.get_market_status()
-        data = clean_data(raw_status)
+        
+        # Dedup logic: Keep only the first occurrence of each coin
+        # This handles potential race conditions or list accumulation bugs
+        unique_status = []
+        seen_coins = set()
+        for item in raw_status:
+            if item['coin'] not in seen_coins:
+                unique_status.append(item)
+                seen_coins.add(item['coin'])
+                
+        data = clean_data(unique_status)
         
         # Enrich with Account Info
         account_info = {
@@ -117,16 +136,36 @@ def get_market_status():
 
 @app.get("/positions")
 def get_positions():
-    """Get active trades"""
+    """Get active trades from the Execution Engine (Source of Truth)"""
     if not strategy: return {"error": "Strategy initializing"}
+    
+    positions = {}
+    
+    # Preferred: Get from Execution Engine (Live or Paper)
+    if strategy.execution:
+        try:
+            info = strategy.execution.get_account_info()
+            raw_positions = info.get('positions', [])
+            
+            # Normalize to dictionary format expected by frontend {coin: { ... }}
+            for p in raw_positions:
+                coin = p.get('coin')
+                if coin:
+                    positions[coin] = p
+                    
+            return positions
+        except Exception as e:
+            print(f"Error fetching positions from execution: {e}")
+            
+    # Fallback (Legacy)
     # Convert datetime objects to string for JSON serialization
-    serialized_positions = {}
     for coin, pos in strategy.active_positions.items():
         pos_copy = pos.copy()
         if 'ts' in pos_copy:
             pos_copy['ts'] = pos_copy['ts'].isoformat()
-        serialized_positions[coin] = pos_copy
-    return serialized_positions
+        positions[coin] = pos_copy
+        
+    return positions
 
 @app.post("/control/start")
 def start_bot():
@@ -180,6 +219,31 @@ def close_all():
     if not strategy: return {"error": "Strategy initializing"}
     strategy.manual_close_all()
     return {"status": "ok", "message": "Panic close triggered"}
+
+# --- SAAS ENDPOINTS ---
+
+class SubscriberRequest(BaseModel):
+    user_id: str
+    wallet_address: str
+    api_key: str
+    risk_multiplier: float = 1.0
+
+@app.post("/saas/subscribe")
+def add_subscriber(sub: SubscriberRequest):
+    if not copy_engine: return {"error": "SaaS Engine initializing"}
+    success, msg = copy_engine.add_subscriber(sub.user_id, sub.wallet_address, sub.api_key, sub.risk_multiplier)
+    if success:
+        return {"status": "ok", "message": f"Welcome {sub.user_id}!"}
+    return {"status": "error", "message": msg}
+
+@app.get("/saas/subscribers")
+def list_subscribers():
+    if not copy_engine: return []
+    # Return safe list (no keys)
+    safe_list = []
+    for uid, data in copy_engine.subscribers.items():
+        safe_list.append({"user_id": uid, "wallet": data['wallet'], "risk": data['risk']})
+    return safe_list
 
 if __name__ == "__main__":
     import uvicorn
