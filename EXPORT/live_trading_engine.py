@@ -133,26 +133,50 @@ class LiveTradingEngine:
                 print(f"⏰ {current_time} | Check #{iteration}")
                 print(f"{'='*70}")
                 
-                # Check Winner Hunter
-                print("\n🏆 Checking Winner Hunter (1H)...")
-                wh_signal, wh_confidence = self.paper_engine.check_winner_hunter()
-                direction_wh = wh_signal.get('direction', 'None') if wh_signal else 'None'
-                print(f"   Conf: {wh_confidence:.2%} | Signal: {direction_wh}")
-                self.process_signal(wh_signal, wh_confidence, "Winner Hunter (1H)")
+                # --- CRITICAL: CHECK IF WE ALREADY HAVE AN ACTIVE POSITION ---
+                # This prevents executing the same signal multiple times in a loop
+                has_active_position = False
+                if self.enable_live and self.live_trader:
+                    account_info = self.live_trader.get_account_info()
+                    positions = account_info.get('positions', [])
+                    for p in positions:
+                        pos_data = p.get('position', p)
+                        if float(pos_data.get('szi', 0)) != 0:
+                            has_active_position = True
+                            print(f"\n⏸️  Active position detected - skipping new signal checks")
+                            break
                 
-                # Check MTF Scalper
-                print("\n🎯 Checking MTF Scalper (5M)...")
-                mtf_signal, mtf_confidence = self.paper_engine.check_mtf_scalper()
-                direction_mtf = mtf_signal.get('direction', 'None') if mtf_signal else 'None'
-                print(f"   Conf: {mtf_confidence:.2%} | Signal: {direction_mtf}")
-                self.process_signal(mtf_signal, mtf_confidence, "MTF Scalper (5M)")
-                
-                # Check Gem Sniper (Added for Ultra-Precision)
-                print("\n💎 Checking Gem Sniper (5M)...")
-                gem_signal, gem_confidence = self.paper_engine.check_gem_sniper()
-                direction_gem = gem_signal.get('direction', 'None') if gem_signal else 'None'
-                print(f"   Conf: {gem_confidence:.2%} | Signal: {direction_gem}")
-                self.process_signal(gem_signal, gem_confidence, "Gem Sniper (ULTRA)")
+                # --- ONLY CHECK FOR SIGNALS IF NO ACTIVE POSITION ---
+                if not has_active_position:
+                    # Check Winner Hunter
+                    print("\n🏆 Checking Winner Hunter (1H)...")
+                    wh_signal, wh_confidence = self.paper_engine.check_winner_hunter()
+                    direction_wh = wh_signal.get('direction', 'None') if wh_signal else 'None'
+                    print(f"   Conf: {wh_confidence:.2%} | Signal: {direction_wh}")
+                    self.process_signal(wh_signal, wh_confidence, "Winner Hunter (1H)")
+                    
+                    # If we just executed a signal, mark position as active
+                    if wh_signal and self.enable_live:
+                        has_active_position = True
+                    
+                    # Check MTF Scalper (only if no position from WH)
+                    if not has_active_position:
+                        print("\n🎯 Checking MTF Scalper (5M)...")
+                        mtf_signal, mtf_confidence = self.paper_engine.check_mtf_scalper()
+                        direction_mtf = mtf_signal.get('direction', 'None') if mtf_signal else 'None'
+                        print(f"   Conf: {mtf_confidence:.2%} | Signal: {direction_mtf}")
+                        self.process_signal(mtf_signal, mtf_confidence, "MTF Scalper (5M)")
+                        
+                        if mtf_signal and self.enable_live:
+                            has_active_position = True
+                    
+                    # Check Gem Sniper (only if no position from WH or MTF)
+                    if not has_active_position:
+                        print("\n💎 Checking Gem Sniper (5M)...")
+                        gem_signal, gem_confidence = self.paper_engine.check_gem_sniper()
+                        direction_gem = gem_signal.get('direction', 'None') if gem_signal else 'None'
+                        print(f"   Conf: {gem_confidence:.2%} | Signal: {direction_gem}")
+                        self.process_signal(gem_signal, gem_confidence, "Gem Sniper (ULTRA)")
                 
                 # Get current price for position checks
                 import requests

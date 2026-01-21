@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import ta
 from ta.utils import dropna
-from advanced_features import add_advanced_features
+from .advanced_features import add_advanced_features
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 
@@ -19,6 +19,11 @@ def add_all_indicators(df, use_advanced=True):
     Add comprehensive list of technical indicators including advanced regime features.
     """
     df = df.copy()
+    
+    # Optimization: If key indicators exist, skip (assume pre-calculated)
+    if 'rsi_14' in df.columns and 'adx' in df.columns and 'atr_14' in df.columns:
+        # print("      ⚡ Indicators already present, skipping calculation", flush=True)
+        return df
     
     # --- 1. Advanced Regime Features (Hurst, Volatility, etc) ---
     if use_advanced:
@@ -29,7 +34,7 @@ def add_all_indicators(df, use_advanced=True):
         
     # --- 2. Trend Indicators ---
     
-    print(f"      🔧 add_all_indicators START: {len(df)} rows, {len(df.columns)} cols", flush=True)
+    # print(f"      🔧 add_all_indicators START: {len(df)} rows, {len(df.columns)} cols", flush=True)
     
     # Helper function to safely calculate indicators
     def safe_indicator(func, default=0):

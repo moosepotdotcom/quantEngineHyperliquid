@@ -1,0 +1,15 @@
+{
+  "current_price": 96848.0,
+  "total_liquidations": 2310,
+  "long_liquidations": 1045,
+  "short_liquidations": 1265,
+  "total_volume": 650.062,
+  "timestamp": "2026-01-15T19:27:38.533512",
+  "near_liquidations": {
+    "count": 2310,
+    "volume": 650.062,
+    "long_count": 1045,
+    "short_count": 1265,
+    "avg_price": 96791.31701298701
+  }
+}

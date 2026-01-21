@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V8 Enhanced Trading Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #00ff88;
+            color: #0a0e27;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .heatmap-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .heatmap-container h2 {
+            margin-bottom: 20px;
+            color: #00ff88;
+        }
+
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .v8-status {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .v8-status h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #00ff88;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(90deg, #00ff88, #00d4ff);
+            color: #0a0e27;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🚀 V8 Enhanced Trading Dashboard</h1>
+        <span class="status-badge" id="status">● LIVE</span>
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+    </div>
+
+    <div class="container">
+        <!-- V8 Enhanced Status -->
+        <div class="v8-status">
+            <h2>🎯 V8 Enhanced Strategy</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Base Win Rate</div>
+                    <div class="stat-value" id="base-wr">83.82%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Expected Win Rate</div>
+                    <div class="stat-value" id="expected-wr">90%+</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Auto-Optimization</div>
+                    <div class="stat-value" id="auto-opt">ACTIVE</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Liquidation Boost</div>
+                    <div class="stat-value" id="liq-boost">ENABLED</div>
+                </div>
+            </div>
+
+            <ul class="feature-list">
+                <li>V8 Base Model (Proven 83.82% WR)</li>
+                <li>Auto-Optimization (900+ parameter tests)</li>
+                <li>Liquidation Proximity Detection</li>
+                <li>Dynamic Confidence Boosting (+20%)</li>
+                <li>24-Hour Re-optimization Cycle</li>
+            </ul>
+        </div>
+
+        <!-- Live Stats -->
+        <h2 style="color: #00ff88; margin: 30px 0 20px 0;">📊 Live Liquidation Data</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Liquidations</div>
+                <div class="stat-value" id="total-liqs">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Volume</div>
+                <div class="stat-value" id="total-vol">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Long Liquidations</div>
+                <div class="stat-value" id="long-liqs">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Short Liquidations</div>
+                <div class="stat-value" id="short-liqs">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current BTC Price</div>
+                <div class="stat-value" id="btc-price">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Update</div>
+                <div class="stat-value" id="last-update" style="font-size: 1.2em;">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Interactive Heatmap -->
+        <div class="heatmap-container">
+            <h2>🔥 Interactive Liquidation Heatmap</h2>
+            <iframe src="/heatmap" id="heatmap-frame"></iframe>
+        </div>
+    </div>
+
+    <script>
+        async function refreshData() {
+            try {
+                // Get liquidation stats
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+
+                document.getElementById('total-liqs').textContent = stats.total_liquidations.toLocaleString();
+                document.getElementById('total-vol').textContent = stats.total_volume.toFixed(2) + ' BTC';
+                document.getElementById('long-liqs').textContent = stats.long_liquidations.toLocaleString();
+                document.getElementById('short-liqs').textContent = stats.short_liquidations.toLocaleString();
+                document.getElementById('btc-price').textContent = '$' + stats.current_btc_price.toLocaleString();
+                document.getElementById('last-update').textContent = new Date(stats.last_update).toLocaleTimeString();
+
+                // Reload heatmap
+                document.getElementById('heatmap-frame').src = '/heatmap?' + new Date().getTime();
+
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+
+</html>

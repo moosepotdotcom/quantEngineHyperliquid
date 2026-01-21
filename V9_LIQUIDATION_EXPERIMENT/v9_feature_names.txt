@@ -1,0 +1,12 @@
+ema_50
+adx
+volume
+cvd_1h
+volume_delta
+liq_proxy_score
+liq_direction
+liq_cluster_count
+vol_surge
+wick_ratio
+is_vol_spike
+is_long_wick

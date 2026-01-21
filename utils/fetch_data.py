@@ -38,10 +38,14 @@ def fetch_binance(symbol='BTCUSDT', interval='1h', limit=1000):
         ])
         
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
+        
+        # Keep Taker Buy Base Asset Volume for V5 Features
+        df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume', 'taker_buy_base']]
+        
         df = df.astype({
             'open': float, 'high': float, 'low': float, 
-            'close': float, 'volume': float
+            'close': float, 'volume': float,
+            'taker_buy_base': float
         })
         
         return df

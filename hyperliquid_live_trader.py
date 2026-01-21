@@ -229,6 +229,10 @@ class HyperliquidTrader:
         direction = signal.get('direction', 'LONG')
         is_long = (direction == 'LONG')
         
+        if len(self.active_positions) > 0:
+            print(f"⚠️  SINGLE TRADE MODE: Active position exists. Rejecting new signal.")
+            return False
+
         # Calculate dynamic size for compounding
         size = self.calculate_order_size(entry_price)
         if size <= 0: return False

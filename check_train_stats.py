@@ -1,0 +1,10 @@
+import pandas as pd
+df = pd.read_csv('training/data/BTC_5m_mtf_labeled.csv')
+print("Training Data Stats:")
+print(f"Count: {len(df)}")
+print(f"Min Price: {df['close'].min()}")
+print(f"Max Price: {df['close'].max()}")
+print(f"Mean Price: {df['close'].mean()}")
+print(f"Min Volume: {df['volume'].min()}")
+print(f"Max Volume: {df['volume'].max()}")
+print(f"Mean Volume: {df['volume'].mean()}")

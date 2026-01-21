@@ -1,0 +1,35 @@
+{
+    "model_name": "93WR_Optimized",
+    "version": "1.0",
+    "performance": {
+        "win_rate": 0.8382,
+        "net_pnl_pct": 70.80,
+        "total_trades": 68,
+        "trades_per_day": 4.8,
+        "test_period": "2026-01-01 to 2026-01-14"
+    },
+    "configuration": {
+        "base_confidence": 0.40,
+        "max_concurrent_trades": 6,
+        "take_profit_pct": 1.5,
+        "stop_loss_pct": 0.8,
+        "circuit_breaker": {
+            "max_losses": 2,
+            "window_minutes": 60,
+            "cooldown_hours": 4
+        },
+        "filters": {
+            "atr_penalty": true,
+            "atr_threshold": 70,
+            "atr_penalty_rate": 0.002,
+            "hurst_filter": true,
+            "rsi_filter": true
+        }
+    },
+    "deployment": {
+        "status": "ready",
+        "date": "2026-01-15",
+        "models_path": "PRODUCTION_93WR_OPTIMIZED/models/",
+        "engine_path": "PRODUCTION_93WR_OPTIMIZED/quant_engine.py"
+    }
+}

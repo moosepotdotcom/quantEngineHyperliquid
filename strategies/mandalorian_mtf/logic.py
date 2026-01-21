@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Feature list used by this specific model
 MTF_FEATURE_LIST = [
-    'rsi_14', 'macd', 'macd_signal', 'macd_hist', 'cci_14', 'adx_14', 'mfi_14', 'willr_14',
+    'rsi_14', 'macd', 'macd_signal', 'macd_hist', 'cci_14', 'adx', 'mfi_14', 'willr_14',
     'bollinger_hband', 'bollinger_lband', 'bollinger_mavg', 'stoch_k', 'stoch_d',
     'ema_9', 'ema_21', 'ema_50', 'ema_100', 'ema_200', 'atr_14',
     'rsi_14_15m', 'macd_hist_15m', 'ema_50_15m', 'bollinger_hband_15m',
@@ -89,12 +89,29 @@ def check_mtf_scalper(engine):
     # Update Elastic Manager
     engine.mtf_elastic.update(prob_long, prob_short)
     
-    if prob_long >= engine.mtf_elastic.active_threshold_long:
-        direction = 'LONG'
-        confidence = prob_long
-    elif prob_short >= engine.mtf_elastic.active_threshold_short:
-        direction = 'SHORT'
-        confidence = prob_short
+    # Strategy Logic
+    use_rel_strength = getattr(engine, 'use_relative_strength', False)
+    
+    if use_rel_strength:
+        # Relative Strength Mode (Ratio)
+        min_conf = 0.20
+        ratio = engine.mtf_elastic.active_threshold_long # Use threshold as ratio (e.g. 1.2)
+        
+        if max(prob_long, prob_short) >= min_conf:
+            if prob_long > prob_short * ratio:
+                direction = 'LONG'
+                confidence = prob_long
+            elif prob_short > prob_long * ratio:
+                direction = 'SHORT'
+                confidence = prob_short
+    else:
+        # Standard Absolute Threshold Mode
+        if prob_long >= engine.mtf_elastic.active_threshold_long:
+            direction = 'LONG'
+            confidence = prob_long
+        elif prob_short >= engine.mtf_elastic.active_threshold_short:
+            direction = 'SHORT'
+            confidence = prob_short
     
     # Log prediction
     engine.logger.log_prediction(
@@ -117,6 +134,12 @@ def check_mtf_scalper(engine):
         hurst = latest_data.get('hurst', 0.5)
         if engine.use_hurst and direction == 'LONG' and rsi < 30 and hurst > 0.50:
             print(f"   🛑 MANDALORIAN SHIELD: Blocked Falling Knife (Hurst={hurst:.3f}, RSI={rsi:.1f})")
+            return None, confidence
+        
+        # Trend-Fuel Filter (ADX)
+        adx_val = latest_data.get('adx', 20)
+        if hasattr(engine, 'use_adx_filter') and engine.use_adx_filter and adx_val < 30:
+            print(f"   🛑 TREND-FUEL SHIELD: Blocked Choppy Market (ADX={adx_val:.1f} < 30)")
             return None, confidence
         
         # Adaptive ATR Shield

@@ -1,0 +1,16 @@
+[Unit]
+Description=Hyperliquid Cloud Scalper Bot
+After=network.target
+
+[Service]
+Type=simple
+User=alifiyaa
+WorkingDirectory=/home/alifiyaa/bot
+ExecStart=/bin/bash /home/alifiyaa/bot/watchdog.sh
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/alifiyaa/bot/service.log
+StandardError=append:/home/alifiyaa/bot/service.log
+
+[Install]
+WantedBy=multi-user.target

@@ -14,6 +14,7 @@ class WhaleWatcher(threading.Thread):
         self.threshold_usd = threshold_usd
         self.running = True
         self.latest_whale = None
+        self.recent_movements = [] # Buffer for UI
         self.daemon = True 
 
     def run(self):
@@ -51,6 +52,12 @@ class WhaleWatcher(threading.Thread):
                                 'price': price,
                                 'time': time.time()
                             }
+                            
+                            # Add to recent buffer
+                            self.recent_movements.append(self.latest_whale)
+                            # Keep last 10
+                            if len(self.recent_movements) > 10:
+                                self.recent_movements.pop(0)
                             
                             # Log immediately
                             title = "WHALE ALERT"

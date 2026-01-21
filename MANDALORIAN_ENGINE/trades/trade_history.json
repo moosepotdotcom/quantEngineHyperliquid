@@ -1,0 +1,15 @@
+[
+  {
+    "timestamp": "2026-01-17T01:41:38.917693",
+    "direction": "SHORT",
+    "entry_price": 94761.0,
+    "tp_price": 93339.58499999999,
+    "sl_price": 95519.088,
+    "confidence": 0.4526378191153353,
+    "status": "CLOSED",
+    "exit_price": 95563.0,
+    "exit_reason": "SL",
+    "exit_timestamp": "2026-01-17T02:30:08.287384",
+    "pnl": -401.0
+  }
+]

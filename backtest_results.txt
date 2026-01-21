@@ -1,0 +1,17 @@
+Loading data...
+Whales: 151, Candles: 12, Phase4: 12
+
+Running backtest...
+
+============================================================
+BACKTEST RESULTS
+============================================================
+Signals Generated:
+  BUY signals:  0
+  SELL signals: 0
+
+Candles with whale activity: 0
+
+Trades Executed: 0
+No trades executed (insufficient signals or strict thresholds)
+Final Balance: $10000.00

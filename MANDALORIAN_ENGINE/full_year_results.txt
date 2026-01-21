@@ -1,0 +1,576 @@
+/Users/alifiyaa/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+================================================================================
+📊 FULL YEAR 2025 FEE-ADJUSTED BACKTEST
+================================================================================
+Testing 4 configurations across 12 months with 0.114% round-trip fees
+
+
+================================================================================
+⚡ Testing Baseline Configuration
+================================================================================
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:12,564 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jan: Net ROI +146.30%, 1411 trades, WR 53.4%
+      🔧 add_all_indicators START: 8065 rows, 20 cols
+      🔧 add_all_indicators START: 2689 rows, 23 cols
+      🔧 add_all_indicators START: 673 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:19,010 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Feb: Net ROI +168.65%, 1343 trades, WR 55.1%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:24,626 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Mar: Net ROI +138.67%, 1618 trades, WR 51.4%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:30,067 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Apr: Net ROI +80.19%, 1227 trades, WR 50.7%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:35,406 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ May: Net ROI +21.15%, 1022 trades, WR 48.4%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:41,010 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jun: Net ROI +33.72%, 816 trades, WR 51.3%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:46,613 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jul: Net ROI -16.53%, 848 trades, WR 39.4%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:52,163 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Aug: Net ROI +19.16%, 940 trades, WR 48.5%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:21:57,719 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Sep: Net ROI +0.33%, 771 trades, WR 42.4%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:03,552 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Oct: Net ROI +36.12%, 1389 trades, WR 46.9%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:09,417 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Nov: Net ROI +246.35%, 1477 trades, WR 56.4%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:14,875 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Dec: Net ROI +63.58%, 1055 trades, WR 51.4%
+
+================================================================================
+⚡ Testing Conservative Configuration
+================================================================================
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:20,471 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jan: Net ROI +207.89%, 1983 trades, WR 52.0%
+      🔧 add_all_indicators START: 8065 rows, 20 cols
+      🔧 add_all_indicators START: 2689 rows, 23 cols
+      🔧 add_all_indicators START: 673 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:26,133 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Feb: Net ROI +180.86%, 1869 trades, WR 51.3%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:31,544 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Mar: Net ROI +161.29%, 2229 trades, WR 48.1%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:37,260 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Apr: Net ROI +95.92%, 1708 trades, WR 48.5%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:43,100 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ May: Net ROI +23.01%, 1477 trades, WR 48.1%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:49,004 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jun: Net ROI -12.88%, 1302 trades, WR 44.8%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:22:54,637 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jul: Net ROI -34.54%, 1276 trades, WR 39.8%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:00,367 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Aug: Net ROI -7.51%, 1398 trades, WR 44.8%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:06,048 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Sep: Net ROI -10.93%, 1246 trades, WR 47.0%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:11,761 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Oct: Net ROI +30.38%, 1911 trades, WR 44.7%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:17,603 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Nov: Net ROI +260.44%, 2066 trades, WR 51.8%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:23,235 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Dec: Net ROI +104.79%, 1540 trades, WR 50.8%
+
+================================================================================
+⚡ Testing Balanced Configuration
+================================================================================
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:29,004 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jan: Net ROI +259.34%, 2762 trades, WR 51.9%
+      🔧 add_all_indicators START: 8065 rows, 20 cols
+      🔧 add_all_indicators START: 2689 rows, 23 cols
+      🔧 add_all_indicators START: 673 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:34,494 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Feb: Net ROI +184.84%, 2508 trades, WR 50.2%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:39,852 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Mar: Net ROI +223.64%, 2914 trades, WR 49.1%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:45,449 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Apr: Net ROI +175.17%, 2193 trades, WR 51.3%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:51,101 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ May: Net ROI +22.16%, 2104 trades, WR 45.4%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:23:56,721 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jun: Net ROI +0.48%, 1827 trades, WR 46.3%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:02,321 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jul: Net ROI -40.64%, 1899 trades, WR 38.2%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:11,077 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Aug: Net ROI -1.19%, 2095 trades, WR 44.1%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:17,638 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Sep: Net ROI -25.20%, 1711 trades, WR 43.8%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:23,904 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Oct: Net ROI +2.86%, 2861 trades, WR 42.6%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:29,844 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Nov: Net ROI +228.83%, 2950 trades, WR 49.1%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:36,395 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Dec: Net ROI +177.00%, 2034 trades, WR 51.5%
+
+================================================================================
+⚡ Testing Aggressive Configuration
+================================================================================
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:42,136 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jan: Net ROI +403.76%, 3507 trades, WR 48.2%
+      🔧 add_all_indicators START: 8065 rows, 20 cols
+      🔧 add_all_indicators START: 2689 rows, 23 cols
+      🔧 add_all_indicators START: 673 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:48,569 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Feb: Net ROI +306.65%, 3103 trades, WR 46.6%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:24:55,196 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Mar: Net ROI +407.47%, 3574 trades, WR 46.3%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:01,034 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Apr: Net ROI +348.54%, 2636 trades, WR 48.3%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:08,214 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ May: Net ROI +3.09%, 2824 trades, WR 41.5%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:14,897 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jun: Net ROI -15.73%, 2615 trades, WR 43.6%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:21,670 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Jul: Net ROI -66.77%, 2852 trades, WR 36.8%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:28,637 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Aug: Net ROI -38.59%, 3137 trades, WR 42.0%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:35,520 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Sep: Net ROI -51.03%, 2650 trades, WR 41.6%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:42,391 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Oct: Net ROI -34.08%, 3953 trades, WR 39.8%
+      🔧 add_all_indicators START: 8641 rows, 20 cols
+      🔧 add_all_indicators START: 2881 rows, 23 cols
+      🔧 add_all_indicators START: 721 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:49,208 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Nov: Net ROI +307.08%, 3764 trades, WR 45.5%
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:25:55,939 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+  ✅ Dec: Net ROI +281.39%, 2507 trades, WR 48.8%
+
+================================================================================
+📈 ANNUAL SUMMARY (2025)
+================================================================================
+
+Config          Months   Trades    Avg ROI   Avg WR   Total Fees
+--------------------------------------------------------------------------------
+Baseline            12    13917     78.14%    49.6% $    56,672
+Conservative        12    20005     83.23%    47.6% $   100,154
+Balanced            12    27858    100.61%    47.0% $   141,394
+Aggressive          12    37122    154.32%    44.1% $   273,485
+
+================================================================================
+🎯 RECOMMENDED CONFIGURATION
+================================================================================
+
+⭐ Aggressive delivers the best risk-adjusted returns:
+   Average Monthly ROI: 154.32%
+   Average Win Rate: 44.1%
+   Total Trades/Year: 37,122
+   Total Fees Paid: $273,485
+
+================================================================================
+✅ Full Year Backtest Complete!
+================================================================================

@@ -1,0 +1,6 @@
+hyperliquid-python-sdk
+pandas
+websocket-client
+requests
+eth-account
+python-dotenv

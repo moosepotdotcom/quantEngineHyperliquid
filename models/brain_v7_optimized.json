@@ -1,0 +1,12 @@
+{
+    "model": "Brain V7 Trio",
+    "optimized_thresholds": {
+        "long": 0.6499999999999999,
+        "short": 0.4
+    },
+    "expected_performance": {
+        "roi": 0.35182735148716576,
+        "win_rate": 0.5625,
+        "trades": 304
+    }
+}

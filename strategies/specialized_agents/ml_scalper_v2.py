@@ -58,7 +58,7 @@ class MLScalperV2:
         self.name = "MLScalper V2"
         
         # Model paths
-        self.models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
+        self.models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))
         
         # Load models
         self.model_long = None
@@ -81,6 +81,7 @@ class MLScalperV2:
         self.whale_bias = 0  # -1 = selling, 0 = neutral, 1 = buying
         self.funding_bias = 0  # -1 = shorts paying, 0 = neutral, 1 = longs paying
         self.news_block = False  # True = major news, skip trades
+        self.last_probs = (0.0, 0.0) # (long, short)
         
         # Time filters (UTC hours to avoid)
         self.avoid_hours = [3, 4, 5]  # Low liquidity Asian session end
@@ -88,13 +89,19 @@ class MLScalperV2:
     def load_models(self):
         """Load all required models."""
         try:
-            long_path = os.path.join(self.models_dir, 'scalp_mtf_long.pkl')
-            short_path = os.path.join(self.models_dir, 'scalp_mtf_short.pkl')
+            # We use the single V2 binary model if separate ones don't exist
+            v2_json_path = os.path.join(self.models_dir, 'mtf_scalper_5m_v2.json')
+            v2_pkl_path = os.path.join(self.models_dir, 'mtf_scalper_5m_v2_calibrated.pkl')
             
-            if os.path.exists(long_path):
-                self.model_long = joblib.load(long_path)
-            if os.path.exists(short_path):
-                self.model_short = joblib.load(short_path)
+            if os.path.exists(v2_pkl_path):
+                self.model_v2 = joblib.load(v2_pkl_path)
+                print(f"   ✅ V2 Model Loaded (PKL): {os.path.basename(v2_pkl_path)}")
+            elif os.path.exists(v2_json_path):
+                self.model_v2 = xgb.Booster()
+                self.model_v2.load_model(v2_json_path)
+                print(f"   ✅ V2 Model Loaded (JSON): {os.path.basename(v2_json_path)}")
+            else:
+                print(f"   ⚠️ V2 Model Files not found in {self.models_dir}")
                 
             # Regime model (if exists)
             regime_path = os.path.join(self.models_dir, 'regime_classifier.pkl')
@@ -193,22 +200,21 @@ class MLScalperV2:
     def ensemble_predict(self, features):
         """
         Ensemble prediction using multiple models.
-        Returns: (prob_long, prob_short)
         """
-        long_probs = []
-        short_probs = []
+        # Binary classification handling
+        if hasattr(self, 'model_v2'):
+            if hasattr(self.model_v2, 'predict_proba'):
+                # Sklearn-style model
+                probs = self.model_v2.predict_proba(features)[0]
+                # Class 1 is LONG, Class 0 is SHORT based on metadata
+                return probs[1], probs[0]
+            elif hasattr(self.model_v2, 'predict'):
+                # Raw XGBoost booster
+                dmat = xgb.DMatrix(features)
+                prob_long = self.model_v2.predict(dmat)[0]
+                return prob_long, 1.0 - prob_long
         
-        # XGBoost predictions
-        if self.model_long is not None:
-            long_probs.append(self.model_long.predict_proba(features)[0][1])
-        if self.model_short is not None:
-            short_probs.append(self.model_short.predict_proba(features)[0][1])
-        
-        # Average ensemble
-        avg_long = np.mean(long_probs) if long_probs else 0
-        avg_short = np.mean(short_probs) if short_probs else 0
-        
-        return avg_long, avg_short
+        return 0.0, 0.0
     
     def update_dynamic_threshold(self, trade_result):
         """
@@ -242,44 +248,39 @@ class MLScalperV2:
             
             # Filter 1: News Block
             if self.news_block:
-                print("   [V2] ⏸️ News event - skipping")
+                print("   [V2] ⏸️ News event - skipping", flush=True)
                 return None
             
             # Filter 2: Time Filter
             if not self.is_good_time():
-                print(f"   [V2] 🌙 Low liquidity hour - skipping")
+                print(f"   [V2] 🌙 Low liquidity hour - skipping", flush=True)
                 return None
             
             # ===================
             # FEATURE ENGINEERING
             # ===================
             
-            # Generate MTF features
+            # Generate MTF features (Expects 231 features)
             gen = MTFFeatureGenerator(df_5m, df_15m, df_30m)
-            df_feat = gen.generate()
+            latest_features, price_df = gen.generate()
             
-            # Add order flow features
-            df_feat = self.calculate_order_flow_features(df_feat)
+            # Use the latest row for prediction
+            latest_features = latest_features.iloc[[-1]]
             
             # ===================
-            # REGIME DETECTION
+            # REGIME DETECTION (Optional, can use features from latest_features)
             # ===================
             
-            regime = self.detect_regime(df_feat)
+            regime = self.detect_regime(latest_features)
             
             # ===================
             # ML PREDICTION
             # ===================
             
-            # Prepare features
-            cols_to_drop = ['open', 'high', 'low', 'close', 'volume', 'target', 'target_long', 'target_short',
-                            'dividends', 'stock splits', 'vol_delta', 'vol_delta_cumsum', 'vol_delta_ma',
-                            'candle_range', 'large_candle']
-            feature_cols = [c for c in df_feat.columns if c not in cols_to_drop]
-            latest_features = df_feat[feature_cols].iloc[[-1]]
-            
+            # Features are already prepared by MTFFeatureGenerator (231 columns)
             # Get ensemble predictions
             prob_long, prob_short = self.ensemble_predict(latest_features)
+            self.last_probs = (prob_long, prob_short)
             
             # ===================
             # BIAS ADJUSTMENTS (Tier 1)
@@ -309,14 +310,14 @@ class MLScalperV2:
             # SIGNAL DECISION
             # ===================
             
-            current_price = df_5m['close'].iloc[-1]
+            current_price = price_df['close'].iloc[-1]
             
             # Debug output
-            print(f"   [V2] L:{prob_long:.3f} S:{prob_short:.3f} | Regime:{regime} | Whale:{self.whale_bias:+d} | Funding:{self.funding_bias:+d}")
+            print(f"   [V2] L:{prob_long:.3f} S:{prob_short:.3f} | Regime:{regime} | Whale:{self.whale_bias:+d} | Funding:{self.funding_bias:+d}", flush=True)
             
             # Only trade in clear regime (skip CHOP)
             if regime == 'CHOP':
-                print(f"   [V2] 🌊 Choppy market - waiting")
+                print(f"   [V2] 🌊 Choppy market - waiting", flush=True)
                 return self.position
             
             threshold = self.current_threshold

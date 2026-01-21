@@ -1,0 +1,88 @@
+/Users/alifiyaa/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+================================================================================
+💰 FEE-ADJUSTED BACKTEST - DECEMBER 2025
+================================================================================
+Hyperliquid Fee Structure:
+  Maker: 0.020% | Taker: 0.050%
+  Average Fee: 0.047% per side
+  Slippage: 0.010%
+  Total Round-Trip Cost: 0.114%
+================================================================================
+
+📊 Loading dec2025_binance_data.csv...
+🔧 Preparing features...
+      🔧 add_all_indicators START: 8929 rows, 20 cols
+      🔧 add_all_indicators START: 2977 rows, 23 cols
+      🔧 add_all_indicators START: 745 rows, 23 cols
+✅ Data prepared: 8929 candles
+🤖 Running model inference...
+📦 Loading Trio Ensemble Models...
+   🤖 Loading MTF Scalper (5M) Trio Ensemble...
+   🤖 Loading Winner Hunter (1H) Trio Ensemble...
+   🎯 Winner Hunter thresholds: L:32.78%, S:40.89%
+   🎯 MTF Scalper thresholds: L:45.00%, S:45.00%
+   ✅ All systems initialized
+2026-01-18 23:14:17,713 - INFO - 🚀 Mandalorian Phase 3 Initialized (Dry Run: True)
+✅ Inference complete
+
+⚡ Testing Baseline...
+   Gross ROI: +103.30%
+   Fees Paid: $3,971.20 (39.71%)
+   Net ROI: +63.58%
+   Trades: 1055, WR: 51.37%
+   Avg Profit/Trade: $9.79 → $6.03 (after fees)
+
+⚡ Testing Conservative...
+   Gross ROI: +181.47%
+   Fees Paid: $7,668.00 (76.68%)
+   Net ROI: +104.79%
+   Trades: 1540, WR: 50.78%
+   Avg Profit/Trade: $11.78 → $6.80 (after fees)
+
+⚡ Testing Balanced...
+   Gross ROI: +294.40%
+   Fees Paid: $11,739.17 (117.39%)
+   Net ROI: +177.00%
+   Trades: 2034, WR: 51.47%
+   Avg Profit/Trade: $14.47 → $8.70 (after fees)
+
+⚡ Testing Aggressive...
+   Gross ROI: +519.98%
+   Fees Paid: $23,858.43 (238.58%)
+   Net ROI: +281.39%
+   Trades: 2507, WR: 48.78%
+   Avg Profit/Trade: $20.74 → $11.22 (after fees)
+
+================================================================================
+📊 COMPARISON TABLE
+================================================================================
+Config           Trades  Gross ROI       Fees    Net ROI   Impact
+--------------------------------------------------------------------------------
+Baseline           1055    103.30%     39.71%     63.58%    38.4%
+Conservative       1540    181.47%     76.68%    104.79%    42.3%
+Balanced           2034    294.40%    117.39%    177.00%    39.9%
+Aggressive         2507    519.98%    238.58%    281.39%    45.9%
+================================================================================
+
+🎯 KEY INSIGHTS:
+================================================================================
+Baseline: ✅ PROFITABLE
+  Avg Net Profit/Trade: $6.03
+  Fee Efficiency: 61.6% of gross profit retained
+
+Conservative: ✅ PROFITABLE
+  Avg Net Profit/Trade: $6.80
+  Fee Efficiency: 57.7% of gross profit retained
+
+Balanced: ✅ PROFITABLE
+  Avg Net Profit/Trade: $8.70
+  Fee Efficiency: 60.1% of gross profit retained
+
+Aggressive: ✅ PROFITABLE
+  Avg Net Profit/Trade: $11.22
+  Fee Efficiency: 54.1% of gross profit retained
+
+================================================================================
+✅ Fee-Adjusted Backtest Complete!
+================================================================================

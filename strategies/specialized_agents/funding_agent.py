@@ -6,16 +6,27 @@ from hyperliquid.utils import constants
 from utils.logger import log_to_journal
 
 class FundingMonitor(threading.Thread):
-    def __init__(self, refresh_rate=300): # Check every 5 minutes by default
+    def __init__(self, refresh_rate=300, info=None): # Check every 5 minutes by default
         super().__init__()
-        self.info = Info(constants.MAINNET_API_URL, skip_ws=True)
         self.refresh_rate = refresh_rate
         self.running = True
         self.latest_opportunity = None
         self.daemon = True
+        self.info = info
 
     def run(self):
         print(f"💰 Starting Funding Rate Monitor (Scan every {self.refresh_rate}s)...")
+        
+        # Staggered API Init
+        if self.info is None:
+            try:
+                from hyperliquid.info import Info
+                from hyperliquid.utils import constants
+                self.info = Info(constants.MAINNET_API_URL, skip_ws=True)
+            except Exception as e:
+                print(f"   ❌ Funding Monitor failed to connect: {e}")
+                return
+
         while self.running:
             try:
                 self._scan_funding_rates()
@@ -29,11 +40,12 @@ class FundingMonitor(threading.Thread):
                 time.sleep(60)
 
     def get_current_rate(self):
-        """Returns the raw funding rate fraction of the first symbol (usually BTC)"""
-        if self.latest_opportunity and "rate" in self.latest_opportunity:
-             # This is just a string in the current impl, let's fix the class to store the actual map
-             pass
-        # Better: return the rate for BTC specifically if found
+        """Returns the raw funding rate fraction of BTC"""
+        try:
+            if hasattr(self, 'current_funding_map'):
+                return self.current_funding_map.get('BTC', 0.0) / 100.0 # Convert % back to fraction
+        except:
+            pass
         return 0.0
 
     def get_bias(self):
@@ -45,9 +57,9 @@ class FundingMonitor(threading.Thread):
             # We need to access the stored results from _scan_funding_rates
             if hasattr(self, 'current_funding_map'):
                 btc_funding = self.current_funding_map.get('BTC', 0.0)
-                if btc_funding > 0.01: # Longs paying a lot (Bearish)
+                if btc_funding > 0.002: # Longs paying (~1.7% APR) - Bearish
                     return -1
-                elif btc_funding < -0.01: # Shorts paying a lot (Bullish)
+                elif btc_funding < -0.002: # Shorts paying (~1.7% APR) - Bullish
                     return 1
         except:
             pass

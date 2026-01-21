@@ -1,0 +1,32 @@
+{
+  "mode": "PAPER",
+  "balance": 99599.0,
+  "current_position": null,
+  "last_signal": {
+    "timestamp": "2026-01-18T03:42:14.783358",
+    "long_confidence": 0.25461908144593703,
+    "short_confidence": 0.3779485644929827,
+    "price": 95296.0,
+    "long_triggered": false,
+    "short_triggered": false
+  },
+  "thresholds": {
+    "long": 0.45,
+    "short": 0.45
+  },
+  "shields": {
+    "mandalorian": true,
+    "ai_smart": true,
+    "circuit_breaker": true
+  },
+  "circuit_breaker": {
+    "active": false,
+    "until": null
+  },
+  "stats": {
+    "total_trades": 1,
+    "wins": 0,
+    "losses": 1,
+    "win_rate": 0.0
+  }
+}
