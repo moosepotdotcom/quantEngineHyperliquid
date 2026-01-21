@@ -51,15 +51,69 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Williams V1 Quant API", lifespan=lifespan)
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allow all for dev, restrict in prod
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def read_root():
     return {"status": "online", "system": "Williams V1 Sanity Engine"}
+
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+import numpy as np
+import math
+
+def clean_data(data):
+    """Recursively convert numpy types to native python types"""
+    if isinstance(data, dict):
+        return {k: clean_data(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [clean_data(v) for v in data]
+    elif isinstance(data, (np.integer, int)):
+        return int(data)
+    elif isinstance(data, (np.floating, float)):
+        val = float(data)
+        if math.isnan(val) or math.isinf(val):
+            return None
+        return val
+    elif isinstance(data, (np.bool_, bool)):
+        return bool(data)
+    elif isinstance(data, (np.ndarray,)): 
+        return clean_data(data.tolist())
+    return data
 
 @app.get("/status")
 def get_market_status():
     """Get real-time market data and signals"""
     if not strategy: return {"error": "Strategy initializing"}
-    return strategy.get_market_status()
+    try:
+        raw_status = strategy.get_market_status()
+        data = clean_data(raw_status)
+        
+        # Enrich with Account Info
+        account_info = {
+            "mode": strategy.mode,
+            "leverage": strategy.leverage,
+            "balance": 0.0
+        }
+        
+        if strategy.execution:
+            info = strategy.execution.get_account_info()
+            account_info['balance'] = info.get('balance', 0)
+            
+        return {"market": data, "account": account_info}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
 
 @app.get("/positions")
 def get_positions():
@@ -90,6 +144,42 @@ def stop_bot():
     global is_running
     is_running = False
     return {"message": "Bot stopping (wait 60s max)"}
+
+from pydantic import BaseModel
+
+class ModeSettings(BaseModel):
+    mode: str # 'LIVE' or 'PAPER'
+
+class LeverageSettings(BaseModel):
+    leverage: int
+
+@app.post("/settings/mode")
+def set_mode(settings: ModeSettings):
+    if not strategy: return {"error": "Strategy initializing"}
+    success = strategy.set_mode(settings.mode)
+    if success:
+        return {"status": "ok", "mode": strategy.mode}
+    return {"status": "error", "message": "Invalid mode"}
+
+@app.post("/settings/leverage")
+def set_leverage(settings: LeverageSettings):
+    if not strategy: return {"error": "Strategy initializing"}
+    success = strategy.set_leverage(settings.leverage)
+    return {"status": "ok", "leverage": strategy.leverage}
+
+@app.post("/trade/close/{coin}")
+def close_trade(coin: str):
+    if not strategy: return {"error": "Strategy initializing"}
+    success = strategy.manual_close(coin)
+    if success:
+        return {"status": "ok", "message": f"Closed {coin}"}
+    return {"status": "error", "message": "Position not found or failed"}
+
+@app.post("/trade/close-all")
+def close_all():
+    if not strategy: return {"error": "Strategy initializing"}
+    strategy.manual_close_all()
+    return {"status": "ok", "message": "Panic close triggered"}
 
 if __name__ == "__main__":
     import uvicorn

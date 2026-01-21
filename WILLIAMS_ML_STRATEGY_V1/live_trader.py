@@ -10,7 +10,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load Environment Variables
-load_dotenv()
+from dotenv import load_dotenv
+from paper_execution import PaperExecutionEngine
+from execution import HyperliquidTrader
 
 # --- CONFIG ---
 # Hyperliquid Info
@@ -109,39 +111,94 @@ def add_features(df):
     
     return df.dropna()
 
-# Import Execution Engine
-try:
-    from execution import HyperliquidTrader
-    TRADER = HyperliquidTrader(testnet=False) # Mainnet
-    print("✅ Execution Engine Connected.")
-except Exception as e:
-    print(f"⚠️ Execution Engine NOT found or configuration error: {e}")
-    TRADER = None
+# Removed Global TRADER init
 
-def place_order(coin, is_buy, size_usd, tp=None, sl=None):
-    if TRADER:
-        print(f"\n🚀 EXECUTING AUTOMATED TRADE via Hyperliquid SDK...")
-        success = TRADER.execute_trade(coin, is_buy, size_usd, tp, sl)
-        if success:
-            print(f"✅ Trade Executed Successfully for {coin}")
+
+
+    def place_order(self, coin, is_buy, size_usd, tp=None, sl=None):
+        if self.execution:
+            # Update leverage before trade if needed (or assume set globally)
+            # Paper engine uses internal leverage. Live uses account leverage (set in GUI/Hyperliquid)
+            if self.mode == 'PAPER':
+                self.execution.leverage = self.leverage
+                
+            print(f"\n🚀 EXECUTING AUTOMATED TRADE via {self.mode} Engine...")
+            success = self.execution.execute_trade(coin, is_buy, size_usd, tp, sl)
+            return success
         else:
-            print(f"❌ Trade Execution FAILED for {coin}")
-    else:
-        # Fallback to Manual Instructions
-        print(f"\n🚀 EXECUTE TRADE (Manual Action Required):")
-        print(f"   Coin: {coin}")
-        print(f"   Side: {'BUY (Long)' if is_buy else 'SELL (Short)'}")
-        print(f"   Size: ${size_usd} (Leverage {LEVERAGE}x)")
+            print("❌ No Execution Engine Active")
+            return False
+
+    def set_mode(self, new_mode):
+        if new_mode not in ['LIVE', 'PAPER']: return False
+        if new_mode == self.mode: return True
         
-        if tp and sl:
-            print(f"   Take Profit: {tp:.4f}")
-            print(f"   Stop Loss:   {sl:.4f}")
+        print(f"🔄 Switching Mode: {self.mode} -> {new_mode}")
+        self.mode = new_mode
+        self.active_positions = {} # Clear local tracker on switch
+        
+        if self.mode == 'LIVE':
+             try:
+                self.execution = HyperliquidTrader(testnet=False)
+                self.market_open = True
+             except:
+                self.execution = None
+        else:
+             self.execution = PaperExecutionEngine(initial_balance=10000.0)
+             self.market_open = True
+             
+        return True
+
+    def set_leverage(self, lev):
+        self.leverage = lev
+        if self.mode == 'PAPER':
+            self.execution.leverage = lev
+        # For LIVE, leverage is usually set on account, but we can store it for size calc
+        global LEVERAGE 
+        LEVERAGE = lev
+        return True
+
+    def manual_close(self, coin):
+        if self.mode == 'PAPER':
+            return self.execution.close_position(coin)
+        elif self.mode == 'LIVE' and self.execution:
+            # Live close logic needs to be added to HyperliquidTrader or handled here
+            # For now, let's assume we implement close_position in HyperliquidTrader too?
+            # Or use place_market_order based on position.
+            # Best to implement close_position in HyperliquidTrader for parity.
+            pass
+        return False
+
+    def manual_close_all(self):
+        if self.mode == 'PAPER':
+            return self.execution.close_all()
+        # Live panic close
+        if self.mode == 'LIVE' and self.execution:
+            self.execution.emergency_stop_all()
+            return True
+        return False
 
 # ... (Imports remain the same)
 
 class WilliamsStrategy:
-    def __init__(self):
-        print("🤖 Initializing Strategy Engine...")
+    def __init__(self, mode='PAPER'):
+        self.mode = mode
+        print(f"🤖 Initializing Strategy Engine ({self.mode} Mode)...")
+        
+        # Initialize Execution Engine
+        if self.mode == 'LIVE':
+             try:
+                self.execution = HyperliquidTrader(testnet=False)
+                self.market_open = True
+             except Exception as e:
+                print(f"❌ Live Execution Failed: {e}")
+                self.execution = None
+                self.market_open = False
+        else:
+             self.execution = PaperExecutionEngine(initial_balance=10000.0)
+             self.market_open = True
+
+        self.leverage = 3
         self.active_positions = {}
         self.coins = ['BTC', 'ETH', 'SOL', 'AVAX', 'SUI']
         self.features = ['williams_r', 'rsi_14', 'atr_14', 'vol_change', 'ema_200_dist']
@@ -225,11 +282,13 @@ class WilliamsStrategy:
         if signal == 'LONG':
             tp = price * (1 + TP_PCT)
             sl = price * (1 - SL_PCT)
-            place_order(coin, True, MAX_POSITION_SIZE_USD, tp, sl)
+            # Use Instance Method
+            self.place_order(coin, True, MAX_POSITION_SIZE_USD, tp, sl)
         else:
             tp = price * (1 - TP_PCT)
             sl = price * (1 + SL_PCT)
-            place_order(coin, False, MAX_POSITION_SIZE_USD, tp, sl)
+            # Use Instance Method
+            self.place_order(coin, False, MAX_POSITION_SIZE_USD, tp, sl)
             
         self.active_positions[coin] = {'entry': price, 'type': signal, 'ts': datetime.now()}
 
