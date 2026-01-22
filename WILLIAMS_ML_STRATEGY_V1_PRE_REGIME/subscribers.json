@@ -1,0 +1,14 @@
+[
+    {
+        "user_id": "test_follower",
+        "wallet": "0xABC",
+        "key": "SECRET",
+        "risk": 1.0
+    },
+    {
+        "user_id": "test_user",
+        "wallet": "0x123...PLACEHOLDER_WALLET",
+        "key": "0xABC...PLACEHOLDER_KEY",
+        "risk": 0.5
+    }
+]
