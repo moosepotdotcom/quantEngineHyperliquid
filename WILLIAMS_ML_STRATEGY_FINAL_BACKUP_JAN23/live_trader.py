@@ -10,9 +10,15 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load Environment Variables
-from dotenv import load_dotenv
+load_dotenv()
 from paper_execution import PaperExecutionEngine
-from execution import HyperliquidTrader
+# Try import HyperliquidTrader, handle failure if not present
+try:
+    from execution import HyperliquidTrader
+except ImportError:
+    HyperliquidTrader = None
+    print("⚠️ HyperliquidTrader not found, LIVE mode might fail.")
+
 from trend_filter import get_market_regime, should_trade
 
 # --- CONFIG ---
@@ -29,10 +35,6 @@ CONF_THRESH = 0.65
 FEE_PCT = 0.00035
 
 # Risk Management ($53 Account)
-# Max Risk per trade = 2% of $53 = $1.06
-# SL is 1.5%. Size = $1.06 / 0.015 = ~$70 USD.
-# Leverage = $70 / $53 = ~1.3x.
-# Let's be aggressive but safe: Max 3x leverage ($150 USD size).
 LEVERAGE = 3 
 MAX_POSITION_SIZE_USD = 150.0 
 
@@ -68,9 +70,12 @@ def fetch_candles(coin):
     }
     
     try:
+        # print(f"DEBUG: Fetching {coin}...") 
         resp = requests.post(url, json=payload, timeout=15)
         data = resp.json()
-        if not data: return pd.DataFrame()
+        if not data: 
+            print(f"⚠️ Empty Data for {coin}")
+            return pd.DataFrame()
         
         df = pd.DataFrame(data)
         df['timestamp'] = pd.to_datetime(df['t'], unit='ms')
@@ -82,7 +87,7 @@ def fetch_candles(coin):
         df.sort_values('timestamp', inplace=True)
         return df
     except Exception as e:
-        print(f"❌ Error fetching candles: {e}")
+        print(f"❌ Error fetching candles for {coin}: {e}")
         return pd.DataFrame()
 
 def add_features(df):
@@ -112,14 +117,6 @@ def add_features(df):
     
     return df.dropna()
 
-# Removed Global TRADER init
-
-
-
-
-
-# ... (Imports remain the same)
-
 class WilliamsStrategy:
     def __init__(self, mode='PAPER'):
         self.mode = mode
@@ -128,8 +125,12 @@ class WilliamsStrategy:
         # Initialize Execution Engine
         if self.mode == 'LIVE':
              try:
-                self.execution = HyperliquidTrader(testnet=False)
-                self.market_open = True
+                if HyperliquidTrader:
+                    self.execution = HyperliquidTrader(testnet=False)
+                    self.market_open = True
+                else:
+                    self.execution = None
+                    self.market_open = False
              except Exception as e:
                 print(f"❌ Live Execution Failed: {e}")
                 self.execution = None
@@ -139,8 +140,7 @@ class WilliamsStrategy:
              self.market_open = True
 
         self.leverage = 3
-        self.leverage = 3
-        # self.active_positions = {} # REMOVED: Use Execution Engine as Source of Truth
+        self.use_regime_filter = True # Default: ON
         self.copy_engine = None # Injected by API
         self.coins = ['BTC', 'ETH', 'SOL', 'AVAX', 'SUI']
         self.features = ['williams_r', 'rsi_14', 'atr_14', 'vol_change', 'ema_200_dist']
@@ -153,27 +153,37 @@ class WilliamsStrategy:
             model_path = os.path.join(base_path, 'model_v1.json')
             
             self.model.load_model(model_path)
-            print("✅ Model Loaded Successfully.")
+            print(f"✅ Model Loaded Successfully ({model_path})")
         except Exception as e:
             print(f"❌ Error loading model: {e}")
-            raise e
-            
+            self.model = None
+
+    def set_regime_filter(self, enabled: bool):
+        self.use_regime_filter = enabled
+        print(f"🛡️ Regime Filter Set to: {'ON' if enabled else 'OFF'}")
+        return True
+
     def get_market_status(self):
         """Fetch latest data and return detailed status for all coins"""
         status = []
         
+        # Valid Model Check
+        if not self.model:
+            return [{'coin': 'SYS', 'price': 0, 'conf': 0, 'wr': 0, 'regime': 'ERR', 'signal': None, 'error': 'Model Not Loaded'}]
+
         for coin in self.coins:
+            time.sleep(0.2) # Rate limit protection
             try:
                 # 1. Fetch Data
                 df = fetch_candles(coin)
                 if df.empty: 
-                    status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'signal': None, 'error': 'No Data'})
+                    status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'regime': 'ERR', 'signal': None, 'error': 'No Data'})
                     continue
                 
                 # 2. Features
                 df = add_features(df)
                 if df.empty: 
-                    status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'signal': None, 'error': 'Not enough data'})
+                    status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'regime': 'ERR', 'signal': None, 'error': 'Not enough data'})
                     continue
                 
                 last_row = df.iloc[-1]
@@ -185,7 +195,13 @@ class WilliamsStrategy:
                 
                 # 4. Signal Logic
                 curr_wr = last_row['williams_r']
-                prev_wr = last_row['williams_r_prev']
+                prev_wr = last_row.get('williams_r_prev', 0) # Handle potential missing column if shift failed (unlikely)
+                # Recalculate WR Prev to be safe or use what's in DF
+                if 'williams_r_prev' not in df.columns:
+                     prev_wr = df['williams_r'].iloc[-2]
+                else:
+                     prev_wr = last_row['williams_r_prev']
+
                 
                 # A. Regime Detection
                 regime = get_market_regime(df)
@@ -206,11 +222,16 @@ class WilliamsStrategy:
                 reject_reason = None
                 
                 if raw_signal:
-                    is_valid, reason = should_trade(raw_signal, regime)
-                    if is_valid:
-                        final_signal = raw_signal
+                    if self.use_regime_filter:
+                        is_valid, reason = should_trade(raw_signal, regime)
+                        if is_valid:
+                            final_signal = raw_signal
+                        else:
+                            reject_reason = reason
                     else:
-                        reject_reason = reason
+                        # Filter Disabled: Take all raw signals
+                        final_signal = raw_signal
+                        reject_reason = "Filter Disabled"
                         
                 status.append({
                     'coin': coin,
@@ -225,16 +246,14 @@ class WilliamsStrategy:
                 # 5. Execute Auto-Trade
                 if final_signal:
                     self.execute_signal(coin, final_signal, price)
-                # elif raw_signal:
-                #     print(f"   🛡️ Filtered {raw_signal} on {coin}: {reject_reason}")
                         
             except Exception as e:
+                print(f"Error processing {coin}: {e}")
                 status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'regime': 'ERR', 'signal': None, 'error': str(e)})
         
         # AUTOMATED PAPER POSITION MANAGEMENT
-        # Check active positions for TP/SL hits using the latest prices we just fetched
         if self.mode == 'PAPER' and self.execution:
-            current_prices = {s['coin']: s['price'] for s in status if s['price'] > 0}
+            current_prices = {s['coin']: s['price'] for s in status if isinstance(s, dict) and s.get('price', 0) > 0}
             self.execution.check_positions(current_prices)
                 
         return status
@@ -247,7 +266,6 @@ class WilliamsStrategy:
             active_coins = {p.get('coin') for p in positions}
             
             if coin in active_coins:
-                # print(f"   Debounce: {coin} already open")
                 return 
         
         print(f"   🚨 SIGNAL FOUND: {coin} {signal}")
@@ -255,29 +273,20 @@ class WilliamsStrategy:
         if signal == 'LONG':
             tp = price * (1 + TP_PCT)
             sl = price * (1 - SL_PCT)
-            # Use Instance Method
             self.place_order(coin, True, MAX_POSITION_SIZE_USD, tp, sl)
-            # SaaS Broadcast
             if self.copy_engine:
                  self.copy_engine.broadcast_trade(coin, True, price, MAX_POSITION_SIZE_USD, tp, sl)
         else:
             tp = price * (1 - TP_PCT)
             sl = price * (1 + SL_PCT)
-            # Use Instance Method
             self.place_order(coin, False, MAX_POSITION_SIZE_USD, tp, sl)
-            # SaaS Broadcast
             if self.copy_engine:
                  self.copy_engine.broadcast_trade(coin, False, price, MAX_POSITION_SIZE_USD, tp, sl)
-            
-        # self.active_positions update removed - rely on execution engine
 
     def place_order(self, coin, is_buy, size_usd, tp=None, sl=None):
         if self.execution:
-            # Update leverage before trade if needed (or assume set globally)
-            # Paper engine uses internal leverage. Live uses account leverage (set in GUI/Hyperliquid)
             if self.mode == 'PAPER':
                 self.execution.leverage = self.leverage
-                
             print(f"\n🚀 EXECUTING AUTOMATED TRADE via {self.mode} Engine...")
             success = self.execution.execute_trade(coin, is_buy, size_usd, tp, sl)
             return success
@@ -291,7 +300,7 @@ class WilliamsStrategy:
         
         print(f"🔄 Switching Mode: {self.mode} -> {new_mode}")
         self.mode = new_mode
-        self.active_positions = {} # Clear local tracker on switch
+        self.active_positions = {} 
         
         if self.mode == 'LIVE':
              try:
@@ -309,29 +318,25 @@ class WilliamsStrategy:
         self.leverage = lev
         if self.mode == 'PAPER':
             self.execution.leverage = lev
-        # For LIVE, leverage is usually set on account, but we can store it for size calc
         global LEVERAGE 
         LEVERAGE = lev
         return True
 
     def manual_close(self, coin):
-        if self.mode == 'PAPER':
-            return self.execution.close_position(coin)
-        elif self.mode == 'LIVE' and self.execution:
-            # Live close logic needs to be added to HyperliquidTrader or handled here
-            # For now, let's assume we implement close_position in HyperliquidTrader too?
-            # Or use place_market_order based on position.
-            # Best to implement close_position in HyperliquidTrader for parity.
+        if self.execution:
+            if self.mode == 'PAPER':
+                return self.execution.close_position(coin)
+            # Add live manual close if needed
             pass
         return False
 
     def manual_close_all(self):
-        if self.mode == 'PAPER':
-            return self.execution.close_all()
-        # Live panic close
-        if self.mode == 'LIVE' and self.execution:
-            self.execution.emergency_stop_all()
-            return True
+        if self.execution:
+            if self.mode == 'PAPER':
+                return self.execution.close_all()
+            if self.mode == 'LIVE':
+                self.execution.emergency_stop_all()
+                return True
         return False
 
 def run_bot():
@@ -346,7 +351,6 @@ def run_bot():
         print(f"\n⏳ Loop Start: {datetime.now().strftime('%H:%M:%S')}")
         status = strategy.get_market_status()
         
-        
         for s in status:
             symbol = "🟢" if s['conf'] > 0.5 else "⚪"
             if s['conf'] > CONF_THRESH: symbol = "🔥"
@@ -360,7 +364,7 @@ def run_bot():
             # Error/Filter Msg
             msg = ""
             if s['signal']: msg = f"🚀 {s['signal']}"
-            elif s['error']: msg = f"🛡️ {s['error']}"
+            elif s.get('error'): msg = f"🛡️ {s['error']}"
             
             print(f"   {s['coin']:<4} | WR: {s['wr']:>6.1f} | Conf: {s['conf']:.2f} {symbol} | {regime_icon} {s['regime']:<8} | {msg}")
             

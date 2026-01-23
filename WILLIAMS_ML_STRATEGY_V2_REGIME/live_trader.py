@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from dotenv import load_dotenv
 from paper_execution import PaperExecutionEngine
 from execution import HyperliquidTrader
-from trend_filter import get_market_regime, should_trade
 
 # --- CONFIG ---
 # Hyperliquid Info
@@ -187,49 +186,32 @@ class WilliamsStrategy:
                 curr_wr = last_row['williams_r']
                 prev_wr = last_row['williams_r_prev']
                 
-                # A. Regime Detection
-                regime = get_market_regime(df)
-                
-                raw_signal = None
+                signal = None
                 
                 # Momentum Breakout (Long)
                 if (prev_wr < -20 and curr_wr >= -20):
                     if prob >= CONF_THRESH:
-                        raw_signal = 'LONG'
+                        signal = 'LONG'
                 # Momentum Breakdown (Short)
                 elif (prev_wr > -80 and curr_wr <= -80):
                     if prob >= CONF_THRESH:
-                        raw_signal = 'SHORT'
-                
-                # B. Regime Filtering
-                final_signal = None
-                reject_reason = None
-                
-                if raw_signal:
-                    is_valid, reason = should_trade(raw_signal, regime)
-                    if is_valid:
-                        final_signal = raw_signal
-                    else:
-                        reject_reason = reason
+                        signal = 'SHORT'
                         
                 status.append({
                     'coin': coin,
                     'price': price,
                     'conf': prob,
                     'wr': curr_wr,
-                    'regime': regime,
-                    'signal': final_signal,
-                    'error': reject_reason # Show rejection reason as error/info
+                    'signal': signal,
+                    'error': None
                 })
                 
                 # 5. Execute Auto-Trade
-                if final_signal:
-                    self.execute_signal(coin, final_signal, price)
-                # elif raw_signal:
-                #     print(f"   🛡️ Filtered {raw_signal} on {coin}: {reject_reason}")
+                if signal:
+                    self.execute_signal(coin, signal, price)
                         
             except Exception as e:
-                status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'regime': 'ERR', 'signal': None, 'error': str(e)})
+                status.append({'coin': coin, 'price': 0, 'conf': 0, 'wr': 0, 'signal': None, 'error': str(e)})
         
         # AUTOMATED PAPER POSITION MANAGEMENT
         # Check active positions for TP/SL hits using the latest prices we just fetched
@@ -346,23 +328,12 @@ def run_bot():
         print(f"\n⏳ Loop Start: {datetime.now().strftime('%H:%M:%S')}")
         status = strategy.get_market_status()
         
-        
         for s in status:
             symbol = "🟢" if s['conf'] > 0.5 else "⚪"
             if s['conf'] > CONF_THRESH: symbol = "🔥"
             
-            # Show Regime
-            regime_icon = "🌫️"
-            if s['regime'] == 'BULLISH': regime_icon = "🐂"
-            elif s['regime'] == 'BEARISH': regime_icon = "🐻"
-            elif s['regime'] == 'RANGING': regime_icon = "🦀"
-            
-            # Error/Filter Msg
-            msg = ""
-            if s['signal']: msg = f"🚀 {s['signal']}"
-            elif s['error']: msg = f"🛡️ {s['error']}"
-            
-            print(f"   {s['coin']:<4} | WR: {s['wr']:>6.1f} | Conf: {s['conf']:.2f} {symbol} | {regime_icon} {s['regime']:<8} | {msg}")
+            error_msg = f" ({s['error']})" if s['error'] else ""
+            print(f"   {s['coin']:<4} | WR: {s['wr']:>6.1f} | Conf: {s['conf']:.2f} {symbol}{error_msg}")
             
         print("   Sleeping 60s...")
         time.sleep(60)
