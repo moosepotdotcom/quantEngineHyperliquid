@@ -154,67 +154,17 @@ def generate_log(tp_pct, sl_pct):
                     'regime': regime
                 }
 
-    df_logs = pd.DataFrame(all_trades).sort_values('entry_time')
-    return df_logs
+    return pd.DataFrame(all_trades).sort_values('entry_time')
 
 print("\n🚀 GENERATING OPTIMIZED LOGS (TP 0.9% / SL 2.0%)")
 df_logs = generate_log(0.009, 0.020)
 
-# 1. SAVE TO CSV
-csv_path = "OPTIMIZED_TRADES_JAN2_JAN23.csv"
-df_logs.to_csv(csv_path, index=False)
-print(f"✅ Saved full logs to {csv_path}")
+print("\n" + "="*80)
+print(f"{'COIN':<5} {'TIME':<20} {'DIR':<6} {'PRICE':<8} {'TP':<8} {'SL':<8} {'OUTCOME':<8} {'PnL %'}")
+print("-" * 80)
 
-# 2. ANALYSIS
-print("\n🔎 INTERESTING OBSERVATIONS")
-
-# A. Streaks
-df_logs['win'] = df_logs['outcome'] == 'WIN'
-# Magic one-liner for streaks
-df_logs['streak_grp'] = (df_logs['win'] != df_logs['win'].shift()).cumsum()
-streaks = df_logs.groupby(['streak_grp', 'win']).size()
-max_win_streak = streaks[streaks.index.get_level_values(1) == True].max()
-max_loss_streak = streaks[streaks.index.get_level_values(1) == False].max()
-
-print(f"🔥 Longest Winning Streak: {max_win_streak} trades")
-print(f"❄️ Longest Losing Streak: {max_loss_streak} trades")
-
-# B. Best Coin
-coin_metrics = df_logs.groupby('coin').apply(lambda x: pd.Series({
-    'trades': len(x),
-    'wr': (x['outcome']=='WIN').mean() * 100,
-    'pnl_sum': x['pnl_pct'].sum() * 100 # Sum of % PnL
-}))
-best_coin = coin_metrics.sort_values('pnl_sum', ascending=False).iloc[0]
-worst_coin = coin_metrics.sort_values('pnl_sum', ascending=True).iloc[0]
-
-print(f"👑 MVP Coin: {best_coin.name} ({best_coin['trades']} trades, {best_coin['wr']:.1f}% WR, Total PnL +{best_coin['pnl_sum']:.1f}%)")
-
-# C. Hourly Edge
-df_logs['hour'] = df_logs['entry_time'].dt.hour
-hourly_wr = df_logs.groupby('hour')['win'].mean() * 100
-best_hour = hourly_wr.idxmax()
-print(f"⏰ Golden Hour: {best_hour}:00 UTC (Win Rate: {hourly_wr.max():.1f}%)")
-
-# 3. EXPORT MARKDOWN REPORT
-md_path = "TRADE_LOG_ANALYSIS.md"
-with open(md_path, "w") as f:
-    f.write("# 📊 Trade Log Analysis (Optimized V1)\n")
-    f.write(f"**Period**: Jan 2 - Jan 23\n")
-    f.write(f"**Settings**: TP 0.9% | SL 2.0%\n\n")
-    
-    f.write("## 💡 Key Observations\n")
-    f.write(f"- **Consistency**: The strategy hit a max winning streak of **{max_win_streak} trades** in a row.\n")
-    f.write(f"- **Top Performer**: **{best_coin.name}** was the most profitable asset.\n")
-    f.write(f"- **Best Time**: Trading around **{best_hour}:00 UTC** yielded the highest reliability.\n\n")
-    
-    f.write("## 📝 Complete Trade Log\n")
-    f.write("| Time (UTC) | Coin | Dir | Price | Outcome | PnL |\n")
-    f.write("|---|---|---|---|---|---|\n")
-    for i, row in df_logs.iterrows():
-        icon = "✅" if row['outcome'] == 'WIN' else "❌"
-        pnl = f"{row['pnl_pct']*100:+.1f}%"
-        f.write(f"| {row['entry_time']} | **{row['coin']}** | {row['dir']} | ${row['price']:.4f} | {icon} {row['outcome']} | {pnl} |\n")
-
-print(f"✅ Analysis Report generated: {md_path}")
-
+# Show last 30 trades
+for i, row in df_logs.tail(30).iterrows():
+    pnl = f"{row['pnl_pct']*100:+.1f}%"
+    print(f"{row['coin']:<5} {str(row['entry_time']):<20} {row['dir']:<6} {row['price']:<8.4f} {row['tp']:<8.4f} {row['sl']:<8.4f} {row['outcome']:<8} {pnl}")
+print("="*80)
