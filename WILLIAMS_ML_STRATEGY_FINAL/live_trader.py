@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+"""
+WILLIAMS %R + ML HYBRID STRATEGY (V1 PRODUCTION)
+-----------------------------------------------
+Core Trading Engine that executes the Williams %R Breakout Strategy
+enhanced by an XGBoost Classifier and Regime Shield.
+
+LOGIC FLOW:
+1. Fetch 5m Candles from Hyperliquid.
+2. Calculate Technical Features (Williams %R, RSI, ATR, EMAs).
+3. Generate ML Prediction (Breakout Probability).
+4. Check Regime Filter (EMA 20 vs 50).
+5. Execute Trade if ALL conditions align.
+
+AUTHOR: Quant Engine Team
+DATE: Jan 23, 2026
+"""
 
 import os
 import time
